@@ -8,9 +8,7 @@ title: ChatGuru
   <div class="model-selector">
     <label for="model-select">Select Model:</label>
     <select id="model-select">
-      {% for model in site.data.models %}
-        <option value="{{ model.id }}">{{ model.name }}</option>
-      {% endfor %}
+      <!-- Models will be populated dynamically -->
     </select>
   </div>
   <div id="chat-window" class="chat-window">

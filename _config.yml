@@ -1,6 +1,4 @@
 title: ChatGuru
 description: A real-time chat app powered by OpenRouter
-baseurl: "/ChatGuru"  # Since this is a project site
+baseurl: "/ChatGuru"
 url: "https://DamionR.github.io"
-plugins:
-  - jekyll-feed
