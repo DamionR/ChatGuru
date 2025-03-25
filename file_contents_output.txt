@@ -1,0 +1,4832 @@
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/README.md
+==================================================
+
+
+# ChatGuru
+
+ChatGuru is an enterprise‐grade, real‐time chat application powered by OpenRouter and hosted on GitHub Pages with Jekyll. It dynamically fetches free AI models, integrates Supabase for user authentication and profile management, and provides advanced features such as persistent conversation history and integrated MCP servers for tools like Google Maps, GitHub, and GDrive.
+
+## Features
+
+• Real-Time Chat – Instant messaging with AI-powered responses.  
+• Dynamic Model Selection – Automatically fetches and displays free models from OpenRouter.  
+• Persistent Conversation History – Conversations are saved per user and can be reloaded.  
+• Robust User Authentication – Secure sign up, sign in, password reset, and profile management powered by Supabase.  
+• Integrated MCP Servers – Extend functionality via MCP servers (Google Maps, GitHub, GDrive, etc.).  
+• Responsive, Enterprise-Grade UI/UX – Mobile-first, clean design with smooth transitions and interactive elements (e.g., clickable addresses that open modal maps).  
+• GitHub Pages Deployment – Simple, automated deployment using Jekyll.
+
+## Live Demo
+
+Visit [https://DamionR.github.io/ChatGuru/](https://DamionR.github.io/ChatGuru/) to view the live application.
+
+## Setup
+
+### Prerequisites
+• Ruby 3.4.2+ (e.g., install via `brew install ruby` on macOS)  
+• Git for version control  
+• Bundler and Jekyll (`gem install bundler jekyll`)  
+• OpenRouter API key from [openrouter.ai](https://openrouter.ai)  
+• Supabase project with authentication and required database schema (see `init_db.sh`)
+
+### Installation
+
+Clone the repository:
+~~~bash
+git clone https://github.com/DamionR/ChatGuru.git
+cd ChatGuru
+~~~
+
+Install dependencies:
+~~~bash
+gem install jekyll bundler
+bundle install
+~~~
+
+Link your local project to Supabase (ensure your project is already linked):
+~~~bash
+supabase link --project-ref zxkvmgmcjuigfgevwdrc
+~~~
+
+Set the environment secret for the Google Maps API key:
+~~~bash
+supabase functions secrets set GOOGLE_MAPS_API_KEY=AIzaSyCYhgqMfTMImNQQjQb6gzHYtW1EODYPpEI
+~~~
+
+### Running Locally
+
+Serve the site locally with:
+~~~bash
+bundle exec jekyll serve --baseurl ""
+~~~
+Open [http://localhost:4000/ChatGuru/](http://localhost:4000/ChatGuru/) in your browser.
+
+## Usage
+
+• **Chat Interface:** Select an AI model, type your message, and click “Send”.  
+• **Conversation History:** Logged‑in users have their past conversations saved and can click a history item to reload the chat.  
+• **Settings:** Use the settings modal to update your API key, system prompt, and AI parameters.  
+• **User Authentication:** Manage sign up, sign in, password reset, and profile updates via dedicated pages.  
+• **Integrated Tools:** Interact with integrated MCP servers for additional functionality (e.g., map rendering with interactive modals).
+
+## Deployment
+
+1. Commit and push your changes:
+~~~bash
+git add .
+git commit -m "Update ChatGuru"
+git push origin main
+~~~
+2. In your GitHub repository, go to **Settings > Pages** and set the source to the main branch.
+3. Access your deployed site at [https://DamionR.github.io/ChatGuru/](https://DamionR.github.io/ChatGuru/).
+
+## Project Structure
+
+• **/_config.yml:** Jekyll configuration.  
+• **/_layouts:** Base layouts (e.g., `default.html`).  
+• **/_includes:** Reusable partials (header, footer, auth navigation).  
+• **/assets/css:**  
+ – `style.css`: Chat interface and general layout styles.  
+ – `auth.css`: Authentication page styles.  
+• **/assets/js:**  
+ – **/chat:**  
+  • `mcpClient.js`: MCP client for server-sent events and tool calls.  
+  • `chatRenderer.js`: Renders messages, including interactive maps and clickable elements.  
+  • `chatSettings.js`: Manages chat settings in localStorage.  
+  • `chat.js`: Main chat module tying together chat functionality, conversation history, and model fetching.  
+ – `supabase-client.js`: Initializes the Supabase client and provides authentication functions.  
+• **/supabase/functions:** Serverless functions (MCP servers for Google Maps, GitHub auth, GDrive, etc.).  
+• **/index.markdown:** Main entry point for the chat interface.  
+• **Authentication Pages:** `signin.html`, `signup.html`, `reset-password.html`, `update-password.html`, `profile.html`.  
+• **Error Pages:** `404.html` and `auth-error.html`.
+
+## Contributing
+
+1. Fork the repository.  
+2. Create a new branch for your feature or fix.  
+3. Make your changes while following the code style and structure.  
+4. Submit a pull request detailing your changes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Acknowledgements
+
+• OpenRouter – Free AI models.  
+• Supabase – Robust backend services.  
+• Jekyll – Static site generation for GitHub Pages.  
+• Design inspiration from modern enterprise interfaces.
+
+## Contact
+
+For issues or feature requests, please open an issue in the GitHub repository or contact the project maintainers directly.
+~~~
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/package.json
+==================================================
+
+{
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "express": "^5.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "zod": "^3.24.2"
+  },
+  "name": "chatguru",
+  "version": "1.0.0",
+  "description": "ChatGuru ChatGuru is a real-time chat application powered by OpenRouter, hosted on GitHub Pages using Jekyll. It fetches AI models dynamically and offers a clean, user-friendly chat interface.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DamionR/ChatGuru.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DamionR/ChatGuru/issues"
+  },
+  "homepage": "https://github.com/DamionR/ChatGuru#readme"
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/organize_project.sh
+==================================================
+
+#!/bin/bash
+# organize_project.sh
+# This script reorganizes the ChatGuru project structure according to the following plan:
+# 1. Create dedicated folders for authentication pages and standalone content pages.
+# 2. Move all authentication-related files (signin.html, signup.html, reset-password.html, update-password.html, profile.html)
+#    from the root into the "auth" folder.
+# 3. Move content pages (e.g. about.md, contact.html) from the root into the "pages" folder.
+# 4. Ensure the default layout file (default.html) is located in the _layouts folder.
+#
+# Run this script from the project root: /Users/damionrashford/ChatGuru
+
+set -e  # Exit immediately if a command exits with a non-zero status
+
+echo "Starting project reorganization..."
+
+# Step 1: Create required directories if they don't already exist
+declare -a dirs=("auth" "pages")
+for d in "${dirs[@]}"; do
+  if [ ! -d "$d" ]; then
+    echo "Creating directory: $d"
+    mkdir -p "$d"
+  else
+    echo "Directory already exists: $d"
+  fi
+done
+
+# Step 2: Move authentication pages into the "auth" folder
+declare -a auth_pages=("signin.html" "signup.html" "reset-password.html" "update-password.html" "profile.html")
+for file in "${auth_pages[@]}"; do
+  if [ -f "$file" ]; then
+    echo "Moving $file to auth/ folder..."
+    mv "$file" "auth/"
+  else
+    echo "File $file not found in root; it may already be in the auth folder."
+  fi
+done
+
+# Step 3: Move standalone content pages into the "pages" folder
+declare -a content_pages=("about.md" "contact.html")
+for file in "${content_pages[@]}"; do
+  if [ -f "$file" ]; then
+    echo "Moving $file to pages/ folder..."
+    mv "$file" "pages/"
+  else
+    echo "File $file not found in root; it may already be organized."
+  fi
+done
+
+# Step 4: Move default layout file to _layouts if it's in the root directory
+if [ -f "default.html" ]; then
+  echo "Moving default.html to _layouts/ folder..."
+  mv "default.html" "_layouts/"
+else
+  echo "default.html not found in root; ensure _layouts/default.html exists."
+fi
+
+echo "Project reorganization complete."
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/init_db.sh
+==================================================
+
+#!/bin/bash
+
+# Initialize the database schema
+echo "Initializing Supabase database schema..."
+
+curl -X POST "https://zxkvmgmcjuigfgevwdrc.supabase.co/rest/v1/rpc/execute_sql" \
+  -H "Content-Type: application/json" \
+  -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mjg1MjY5MSwiZXhwIjoyMDU4NDI4NjkxfQ.ZP5pR7_9MP9s9ZxKosUnmP9HVu94niRuprVVU0sFJzk" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0Mjg1MjY5MSwiZXhwIjoyMDU4NDI4NjkxfQ.ZP5pR7_9MP9s9ZxKosUnmP9HVu94niRuprVVU0sFJzk" \
+  -d '{
+    "sql": "CREATE TABLE IF NOT EXISTS tokens (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, access_token TEXT NOT NULL, refresh_token TEXT, provider TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()); CREATE TABLE IF NOT EXISTS mcp_servers (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, name TEXT NOT NULL, sse_url TEXT NOT NULL, post_url TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), CONSTRAINT unique_mcp_server_name UNIQUE (name)); CREATE TABLE IF NOT EXISTS intent_mappings (id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, intent TEXT NOT NULL UNIQUE, server_name TEXT NOT NULL, tool_name TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(), CONSTRAINT fk_server_name FOREIGN KEY (server_name) REFERENCES mcp_servers(name)); CREATE OR REPLACE FUNCTION register_mcp_server(server_name TEXT, sse_url TEXT, post_url TEXT, intents JSONB) RETURNS VOID AS $$ BEGIN INSERT INTO mcp_servers (name, sse_url, post_url) VALUES (server_name, sse_url, post_url) ON CONFLICT ON CONSTRAINT unique_mcp_server_name DO UPDATE SET sse_url = EXCLUDED.sse_url, post_url = EXCLUDED.post_url; FOR i IN 0..(jsonb_array_length(intents) - 1) LOOP INSERT INTO intent_mappings (intent, server_name, tool_name) VALUES ((intents->i->>''intent'')::TEXT, server_name, (intents->i->>''tool_name'')::TEXT) ON CONFLICT (intent) DO UPDATE SET server_name = EXCLUDED.server_name, tool_name = EXCLUDED.tool_name; END LOOP; END; $$ LANGUAGE plpgsql;"
+  }'
+
+echo "Database schema initialized."
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/index.markdown
+==================================================
+
+---
+layout: default
+title: ChatGuru
+---
+
+<div class="chat-container">
+  <h1>ChatGuru with OpenRouter</h1>
+  
+  <!-- Conversation History Section -->
+  <div id="conversation-history" class="conversation-history">
+    <p>Loading conversation history...</p>
+  </div>
+  
+  <div class="model-selector">
+    <label for="model-select">Select Model:</label>
+    <select id="model-select">
+      <!-- Models will be populated dynamically -->
+    </select>
+    <button id="settings-button">⚙️ Settings</button>
+  </div>
+  <div id="chat-window" class="chat-window">
+    <p>Start chatting below!</p>
+  </div>
+  <div class="chat-input">
+    <textarea id="chat-input" rows="3" placeholder="Type your message..."></textarea>
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<div id="settings-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <h2>Settings</h2>
+    <form id="settings-form">
+      <label for="api-key">API Key:</label>
+      <input type="password" id="api-key" name="api-key" required>
+      <p style="color: red;">Note: Your API key is stored locally in your browser. Do not share it with others.</p>
+      <label for="system-prompt">System Prompt:</label>
+      <textarea id="system-prompt" name="system-prompt" rows="3"></textarea>
+      <label for="temperature">Temperature (0-2):</label>
+      <input type="number" id="temperature" name="temperature" min="0" max="2" step="0.1" value="1.0">
+      <label for="top-p">Top P (0-1):</label>
+      <input type="number" id="top-p" name="top-p" min="0" max="1" step="0.1" value="1.0">
+      <label for="top-k">Top K (0+):</label>
+      <input type="number" id="top-k" name="top-k" min="0" step="1" value="0">
+      <label for="frequency-penalty">Frequency Penalty (-2 to 2):</label>
+      <input type="number" id="frequency-penalty" name="frequency-penalty" min="-2" max="2" step="0.1" value="0.0">
+      <label for="presence-penalty">Presence Penalty (-2 to 2):</label>
+      <input type="number" id="presence-penalty" name="presence-penalty" min="-2" max="2" step="0.1" value="0.0">
+      <label for="repetition-penalty">Repetition Penalty (0+):</label>
+      <input type="number" id="repetition-penalty" name="repetition-penalty" min="0" step="0.1" value="1.0">
+      <label for="min-p">Min P (0-1):</label>
+      <input type="number" id="min-p" name="min-p" min="0" max="1" step="0.1" value="0.0">
+      <label for="top-a">Top A (0+):</label>
+      <input type="number" id="top-a" name="top-a" min="0" step="0.1" value="0.0">
+      <label for="seed">Seed (optional):</label>
+      <input type="number" id="seed" name="seed">
+      <label for="max-tokens">Max Tokens (1+):</label>
+      <input type="number" id="max-tokens" name="max-tokens" min="1" step="1" value="4096">
+      <button type="submit">Save</button>
+    </form>
+  </div>
+</div>
+
+<script src="/ChatGuru/assets/js/chat/chat.js"></script>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/Gemfile.lock
+==================================================
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    addressable (2.8.7)
+      public_suffix (>= 2.0.2, < 7.0)
+    base64 (0.2.0)
+    bigdecimal (3.1.9)
+    colorator (1.1.0)
+    concurrent-ruby (1.3.5)
+    csv (3.3.3)
+    em-websocket (0.5.3)
+      eventmachine (>= 0.12.9)
+      http_parser.rb (~> 0)
+    eventmachine (1.2.7)
+    ffi (1.17.1)
+    ffi (1.17.1-aarch64-linux-gnu)
+    ffi (1.17.1-aarch64-linux-musl)
+    ffi (1.17.1-arm-linux-gnu)
+    ffi (1.17.1-arm-linux-musl)
+    ffi (1.17.1-arm64-darwin)
+    ffi (1.17.1-x86-linux-gnu)
+    ffi (1.17.1-x86-linux-musl)
+    ffi (1.17.1-x86_64-darwin)
+    ffi (1.17.1-x86_64-linux-gnu)
+    ffi (1.17.1-x86_64-linux-musl)
+    forwardable-extended (2.6.0)
+    google-protobuf (4.30.1)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.30.1-aarch64-linux)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.30.1-arm64-darwin)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.30.1-x86-linux)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.30.1-x86_64-darwin)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.30.1-x86_64-linux)
+      bigdecimal
+      rake (>= 13)
+    http_parser.rb (0.8.0)
+    i18n (1.14.7)
+      concurrent-ruby (~> 1.0)
+    jekyll (4.4.1)
+      addressable (~> 2.4)
+      base64 (~> 0.2)
+      colorator (~> 1.0)
+      csv (~> 3.0)
+      em-websocket (~> 0.5)
+      i18n (~> 1.0)
+      jekyll-sass-converter (>= 2.0, < 4.0)
+      jekyll-watch (~> 2.0)
+      json (~> 2.6)
+      kramdown (~> 2.3, >= 2.3.1)
+      kramdown-parser-gfm (~> 1.0)
+      liquid (~> 4.0)
+      mercenary (~> 0.3, >= 0.3.6)
+      pathutil (~> 0.9)
+      rouge (>= 3.0, < 5.0)
+      safe_yaml (~> 1.0)
+      terminal-table (>= 1.8, < 4.0)
+      webrick (~> 1.7)
+    jekyll-feed (0.17.0)
+      jekyll (>= 3.7, < 5.0)
+    jekyll-sass-converter (3.1.0)
+      sass-embedded (~> 1.75)
+    jekyll-seo-tag (2.8.0)
+      jekyll (>= 3.8, < 5.0)
+    jekyll-watch (2.2.1)
+      listen (~> 3.0)
+    json (2.10.2)
+    kramdown (2.5.1)
+      rexml (>= 3.3.9)
+    kramdown-parser-gfm (1.1.0)
+      kramdown (~> 2.0)
+    liquid (4.0.4)
+    listen (3.9.0)
+      rb-fsevent (~> 0.10, >= 0.10.3)
+      rb-inotify (~> 0.9, >= 0.9.10)
+    mercenary (0.4.0)
+    minima (2.5.2)
+      jekyll (>= 3.5, < 5.0)
+      jekyll-feed (~> 0.9)
+      jekyll-seo-tag (~> 2.1)
+    pathutil (0.16.2)
+      forwardable-extended (~> 2.6)
+    public_suffix (6.0.1)
+    rake (13.2.1)
+    rb-fsevent (0.11.2)
+    rb-inotify (0.11.1)
+      ffi (~> 1.0)
+    rexml (3.4.1)
+    rouge (4.5.1)
+    safe_yaml (1.0.5)
+    sass-embedded (1.86.0)
+      google-protobuf (~> 4.30)
+      rake (>= 13)
+    sass-embedded (1.86.0-aarch64-linux-android)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-aarch64-linux-gnu)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-aarch64-linux-musl)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-arm-linux-androideabi)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-arm-linux-gnueabihf)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-arm-linux-musleabihf)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-arm64-darwin)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-riscv64-linux-android)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-riscv64-linux-gnu)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-riscv64-linux-musl)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-x86_64-darwin)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-x86_64-linux-android)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-x86_64-linux-gnu)
+      google-protobuf (~> 4.30)
+    sass-embedded (1.86.0-x86_64-linux-musl)
+      google-protobuf (~> 4.30)
+    terminal-table (3.0.2)
+      unicode-display_width (>= 1.1.1, < 3)
+    unicode-display_width (2.6.0)
+    webrick (1.9.1)
+
+PLATFORMS
+  aarch64-linux
+  aarch64-linux-android
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-androideabi
+  arm-linux-gnu
+  arm-linux-gnueabihf
+  arm-linux-musl
+  arm-linux-musleabihf
+  arm64-darwin
+  riscv64-linux-android
+  riscv64-linux-gnu
+  riscv64-linux-musl
+  ruby
+  x86-linux
+  x86-linux-gnu
+  x86-linux-musl
+  x86_64-darwin
+  x86_64-linux
+  x86_64-linux-android
+  x86_64-linux-gnu
+  x86_64-linux-musl
+
+DEPENDENCIES
+  http_parser.rb (~> 0.6.0)
+  jekyll (~> 4.4.1)
+  jekyll-feed (~> 0.12)
+  minima (~> 2.5)
+  tzinfo (>= 1, < 3)
+  tzinfo-data
+  wdm (~> 0.1)
+
+BUNDLED WITH
+   2.6.6
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/Gemfile
+==================================================
+
+source "https://rubygems.org"
+
+gem "github-pages", "~> 231", group: :jekyll_plugins
+
+group :jekyll_plugins do
+  gem "jekyll-feed", "~> 0.12"
+end
+
+platforms :mingw, :x64_mingw, :mswin, :jruby do
+  gem "tzinfo", ">= 1", "< 3"
+  gem "tzinfo-data"
+end
+
+gem "wdm", "~> 0.1", :platforms => [:mingw, :x64_mingw, :mswin]
+
+gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth-error.html
+==================================================
+
+---
+layout: default
+title: Authentication Error
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-error-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+    }
+    .auth-error-container h1 {
+      color: #d32f2f;
+      margin-bottom: 20px;
+    }
+    .auth-error-container ul {
+      text-align: left;
+      margin: 20px 0;
+      padding-left: 20px;
+    }
+    .auth-actions a.button {
+      margin: 10px;
+      padding: 10px 16px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .primary-button {
+      background-color: #3b82f6;
+      color: #fff;
+    }
+    .secondary-button {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    .primary-button:hover {
+      background-color: #2563eb;
+    }
+    .secondary-button:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-error-container">
+    <h1>Authentication Error</h1>
+    <p>There was a problem authenticating your account.</p>
+    <p>This could be due to:</p>
+    <ul>
+      <li>An expired or invalid authentication link</li>
+      <li>An issue with your account</li>
+      <li>A temporary system problem</li>
+    </ul>
+    <div class="auth-actions">
+      <a href="/signin.html" class="button primary-button">Try Signing In Again</a>
+      <a href="/" class="button secondary-button">Return to Home</a>
+    </div>
+  </div>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/deploy_edge_functions.sh
+==================================================
+
+#!/bin/bash
+
+# Supabase project reference
+SUPABASE_PROJECT_REF="zxkvmgmcjuigfgevwdrc"
+ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4NTI2OTEsImV4cCI6MjA1ODQyODY5MX0.fTxsFd_NN4p2i2giUsY1FvFm8hlhrBJ-7ycso4ux8I8"
+FUNCTIONS_DIR="$(pwd)/supabase/functions"
+
+# Function to deploy and register an MCP function
+deploy_register_function() {
+  local function_name=$1
+  local intents=$2
+  
+  echo "=== Deploying Edge Function: ${function_name} ==="
+  supabase functions deploy ${function_name} --project-ref ${SUPABASE_PROJECT_REF}
+  
+  # Check if deployment was successful
+  if [ $? -ne 0 ]; then
+    echo "Failed to deploy ${function_name}. Continuing anyway..."
+  else
+    echo "Successfully deployed ${function_name}!"
+  fi
+  
+  # If intents are provided, register the MCP server
+  if [ -n "$intents" ]; then
+    # URLs for the MCP server
+    local sse_url="https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/${function_name}/sse"
+    local post_url="https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/${function_name}/messages"
+    
+    echo "=== Registering MCP server: ${function_name} ==="
+    curl -s -X POST "https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/register-mcp" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer ${ANON_KEY}" \
+      -d "{\"server_name\": \"${function_name}\", \"sse_url\": \"${sse_url}\", \"post_url\": \"${post_url}\", \"intents\": ${intents}}"
+    
+    echo -e "\nMCP server ${function_name} registration completed."
+  fi
+  
+  echo -e "========================================\n"
+}
+
+# Function to determine intents for a function based on its name
+get_intents_for_function() {
+  local function_name=$1
+  
+  # Define intents based on function name
+  case "$function_name" in
+    gdrive-mcp)
+      echo '[{"intent": "search_drive", "tool_name": "search"}, {"intent": "get_file_details", "tool_name": "getFile"}, {"intent": "list_folder_contents", "tool_name": "listFolder"}]'
+      ;;
+    *)
+      # No intents for other functions
+      echo ""
+      ;;
+  esac
+}
+
+echo "===== ChatGuru Edge Functions Deployment ====="
+
+# Loop through all subdirectories in the functions directory
+if [ ! -d "$FUNCTIONS_DIR" ]; then
+  echo "Error: Functions directory not found at $FUNCTIONS_DIR"
+  exit 1
+fi
+
+# Deploy register-mcp first if it exists
+if [ -d "$FUNCTIONS_DIR/register-mcp" ]; then
+  deploy_register_function "register-mcp" ""
+fi
+
+# Then deploy all other functions
+for func_dir in "$FUNCTIONS_DIR"/*; do
+  if [ -d "$func_dir" ]; then
+    func_name=$(basename "$func_dir")
+    
+    # Skip register-mcp as it's already deployed
+    if [ "$func_name" != "register-mcp" ]; then
+      # Get intents for this function
+      intents=$(get_intents_for_function "$func_name")
+      
+      # Deploy and register
+      deploy_register_function "$func_name" "$intents"
+    fi
+  fi
+done
+
+echo "===== Deployment Process Completed ====="
+echo "Deployed and registered all functions in $FUNCTIONS_DIR"
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/404.html
+==================================================
+
+---
+permalink: /404.html
+layout: page
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <style>
+    .container {
+      margin: 20px auto;
+      max-width: 600px;
+      text-align: center;
+      padding: 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    h1 {
+      margin: 30px 0;
+      font-size: 4em;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #d32f2f;
+    }
+    p { font-size: 1.2em; }
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <p><strong>Page not found :(</strong></p>
+    <p>The requested page could not be found.</p>
+    <p><a href="/">Return to Home</a></p>
+  </div>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/.gitignore
+==================================================
+
+# Jekyll build output and caches
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata/
+
+# Vendor libraries (if any)
+vendor/
+
+# Node modules
+node_modules/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Log files
+*.log
+
+# Temporary files and folders
+*.tmp
+tmp/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/_config.yml
+==================================================
+
+title: ChatGuru
+description: A real-time chat app powered by OpenRouter
+baseurl: "/ChatGuru"
+url: "https://DamionR.github.io"
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/config.toml
+==================================================
+
+# For detailed configuration reference documentation, visit:
+# https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "ChatGuru"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[api.tls]
+enabled = false
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+openai_api_key = "env(OPENAI_API_KEY)"
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["https://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 6
+password_requirements = ""
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+max_frequency = "1s"
+otp_length = 6
+otp_expiry = 3600
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[auth.sms.twilio]
+enabled = false
+account_sid = ""
+auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = false
+verify_enabled = false
+
+[auth.mfa.phone]
+enroll_enabled = false
+verify_enabled = false
+otp_length = 6
+template = "Your code is {{ .Code }}"
+max_frequency = "5s"
+
+[edge_runtime]
+enabled = true
+policy = "oneshot"
+inspector_port = 8083
+[functions.github-token-exchange]
+enabled = true
+verify_jwt = true
+import_map = "./functions/github-token-exchange/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/github-token-exchange/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/github-token-exchange/*.html" ]
+
+[functions.maps-mcp]
+enabled = true
+verify_jwt = true
+import_map = "./functions/maps-mcp/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/maps-mcp/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/maps-mcp/*.html" ]
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/.gitignore
+==================================================
+
+# Supabase/.gitignore
+
+# Supabase build artifacts and temporary directories
+.branches
+.temp
+
+# Dotenv files – do not commit any secrets or local environment configurations
+.env.keys
+.env.local
+.env.*.local
+
+# Node modules (if any exist within supabase functions)
+node_modules/
+
+# Log and temporary files
+*.log
+*.tmp
+
+# Local environment and configuration files
+.env
+.env.*
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/register-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.1";
+
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://zxkvmgmcjuigfgevwdrc.supabase.co";
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY");
+
+if (!supabaseKey) {
+  console.error("Missing SERVICE_ROLE_KEY environment variable");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey!);
+
+// CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+};
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204,
+    });
+  }
+
+  try {
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { server_name, sse_url, post_url, intents } = body;
+
+    // Validate required fields
+    if (!server_name || !sse_url || !post_url || !intents) {
+      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Call the database function to register the MCP server
+    const { error } = await supabase.rpc("register_mcp_server", {
+      server_name,
+      sse_url,
+      post_url,
+      intents,
+    });
+
+    if (error) {
+      return new Response(JSON.stringify({ error: `Failed to register MCP server: ${error.message}` }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, message: "MCP server registered successfully" }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/register-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/register-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/maps-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+
+// Base URL for Google Maps APIs
+const BASE_URL = "https://maps.googleapis.com/maps/api";
+
+// --- Helper functions for each tool ---
+
+// 1. Geocoding: Convert an address to coordinates.
+async function geocode(address: string, apiKey: string) {
+  const url = `${BASE_URL}/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Geocoding failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK" || data.results.length === 0) throw new Error(`Geocoding error: ${data.status}`);
+  const result = data.results[0];
+  return {
+    location: result.geometry.location,
+    formatted_address: result.formatted_address,
+    place_id: result.place_id
+  };
+}
+
+// 2. Reverse Geocoding: Convert coordinates to an address.
+async function reverseGeocode(latitude: number, longitude: number, apiKey: string) {
+  const url = `${BASE_URL}/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Reverse geocoding failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK" || data.results.length === 0) throw new Error(`Reverse geocoding error: ${data.status}`);
+  const result = data.results[0];
+  return {
+    formatted_address: result.formatted_address,
+    place_id: result.place_id,
+    address_components: result.address_components
+  };
+}
+
+// 3. Search Places: Text search for places.
+async function searchPlaces(query: string, location: { latitude: number; longitude: number } | undefined, radius: number | undefined, apiKey: string) {
+  let url = `${BASE_URL}/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}`;
+  if (location) url += `&location=${location.latitude},${location.longitude}`;
+  if (radius) url += `&radius=${radius}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Place search failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK") throw new Error(`Place search error: ${data.status}`);
+  return data.results.map((place: any) => ({
+    name: place.name,
+    address: place.formatted_address,
+    location: place.geometry.location,
+    place_id: place.place_id
+  }));
+}
+
+// 4. Place Details: Get detailed info about a place.
+async function getPlaceDetails(place_id: string, apiKey: string) {
+  const url = `${BASE_URL}/place/details/json?place_id=${place_id}&key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Place details failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK") throw new Error(`Place details error: ${data.status}`);
+  const place = data.result;
+  return {
+    name: place.name,
+    address: place.formatted_address,
+    phone: place.international_phone_number,
+    website: place.website,
+    rating: place.rating,
+    reviews: place.reviews,
+    opening_hours: place.opening_hours
+  };
+}
+
+// 5. Distance Matrix: Calculate distances and times.
+async function getDistanceMatrix(origins: string[], destinations: string[], mode: string | undefined, apiKey: string) {
+  const originsParam = origins.join("|");
+  const destinationsParam = destinations.join("|");
+  let url = `${BASE_URL}/distancematrix/json?origins=${encodeURIComponent(originsParam)}&destinations=${encodeURIComponent(destinationsParam)}&key=${apiKey}`;
+  if (mode) url += `&mode=${mode}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Distance matrix failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK") throw new Error(`Distance matrix error: ${data.status}`);
+  return data.rows.map((row: any) => row.elements.map((element: any) => ({
+    distance: element.distance,
+    duration: element.duration
+  })));
+}
+
+// 6. Elevation: Get elevation data.
+async function getElevation(locations: { latitude: number; longitude: number }[], apiKey: string) {
+  const locationsParam = locations.map(loc => `${loc.latitude},${loc.longitude}`).join("|");
+  const url = `${BASE_URL}/elevation/json?locations=${encodeURIComponent(locationsParam)}&key=${apiKey}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Elevation failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK") throw new Error(`Elevation error: ${data.status}`);
+  return data.results.map((result: any) => result.elevation);
+}
+
+// 7. Directions: Get route details.
+async function getDirections(origin: string, destination: string, mode: string | undefined, apiKey: string) {
+  let url = `${BASE_URL}/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&key=${apiKey}`;
+  if (mode) url += `&mode=${mode}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Directions failed: ${response.statusText}`);
+  const data = await response.json();
+  if (data.status !== "OK" || data.routes.length === 0) throw new Error(`Directions error: ${data.status}`);
+  const route = data.routes[0];
+  // Return key information including the overview_polyline and bounds.
+  return {
+    distance: route.legs[0].distance,
+    duration: route.legs[0].duration,
+    steps: route.legs[0].steps.map((step: any) => step.html_instructions),
+    polyline: route.overview_polyline.points,
+    bounds: route.bounds // bounds contains northeast and southwest
+  };
+}
+
+// --- Main function handler ---
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  const basePath = "/functions/v1/maps-mcp";
+
+  // Optional SSE endpoint for MCP connectivity
+  if (url.pathname === `${basePath}/sse`) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("data: maps-mcp connected\n\n");
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } 
+  // Handle messages (POST requests)
+  else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { tool, args } = body;
+      const apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+      if (!apiKey) throw new Error("API key not configured");
+
+      // Prepare structured response content (multiple content items possible)
+      let content = [];
+
+      switch (tool) {
+        case "maps_geocode": {
+          const result = await geocode(args.address, apiKey);
+          content.push({
+            type: "text",
+            text: `Geocoding for "${args.address}":\nCoordinates: ${result.location.lat}, ${result.location.lng}\nAddress: ${result.formatted_address}`
+          });
+          content.push({
+            type: "map",
+            mapType: "location",
+            location: result.location,
+            zoom: 12
+          });
+          break;
+        }
+        case "maps_reverse_geocode": {
+          const result = await reverseGeocode(args.latitude, args.longitude, apiKey);
+          content.push({
+            type: "text",
+            text: `Reverse Geocoding for (${args.latitude}, ${args.longitude}):\nAddress: ${result.formatted_address}`
+          });
+          content.push({
+            type: "map",
+            mapType: "location",
+            location: { lat: args.latitude, lng: args.longitude },
+            zoom: 12
+          });
+          break;
+        }
+        case "maps_search_places": {
+          const results = await searchPlaces(args.query, args.location, args.radius, apiKey);
+          let text = `Places search for "${args.query}":\n`;
+          results.forEach((place: any, index: number) => {
+            text += `${index + 1}. ${place.name} - ${place.address}\n`;
+          });
+          content.push({
+            type: "text",
+            text: text
+          });
+          // Optionally, you could add a map with markers for each place.
+          break;
+        }
+        case "maps_place_details": {
+          const result = await getPlaceDetails(args.place_id, apiKey);
+          content.push({
+            type: "text",
+            text: `Details for place ID ${args.place_id}:\nName: ${result.name}\nAddress: ${result.address}\nPhone: ${result.phone}\nWebsite: ${result.website}\nRating: ${result.rating}`
+          });
+          break;
+        }
+        case "maps_distance_matrix": {
+          const matrix = await getDistanceMatrix(args.origins, args.destinations, args.mode, apiKey);
+          let text = "Distance Matrix Results:\n";
+          matrix.forEach((row: any, i: number) => {
+            row.forEach((elem: any, j: number) => {
+              text += `From "${args.origins[i]}" to "${args.destinations[j]}": ${elem.distance.text} (${elem.duration.text})\n`;
+            });
+          });
+          content.push({
+            type: "text",
+            text: text
+          });
+          break;
+        }
+        case "maps_elevation": {
+          const elevations = await getElevation(args.locations, apiKey);
+          let text = "Elevation Results (in meters):\n";
+          elevations.forEach((elev: number, i: number) => {
+            text += `Location ${i + 1}: ${elev}\n`;
+          });
+          content.push({
+            type: "text",
+            text: text
+          });
+          break;
+        }
+        case "maps_directions": {
+          const result = await getDirections(args.origin, args.destination, args.mode, apiKey);
+          const stepsText = result.steps.map((step: string, index: number) => `${index + 1}. ${step}`).join('\n');
+          content.push({
+            type: "text",
+            text: `Directions from "${args.origin}" to "${args.destination}":\nDistance: ${result.distance.text}, Duration: ${result.duration.text}\nSteps:\n${stepsText}`
+          });
+          content.push({
+            type: "map",
+            mapType: "directions",
+            polyline: result.polyline,
+            bounds: result.bounds
+          });
+          break;
+        }
+        default:
+          return new Response(
+            JSON.stringify({ error: "Tool not found" }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
+          );
+      }
+
+      return new Response(JSON.stringify({ content }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+  return new Response("Not Found", { status: 404 });
+});
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/maps-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/maps-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-token-exchange/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+// Initialize Supabase client with service role key
+const supabase = createClient(
+  "https://zxkvmgmcjuigfgevwdrc.supabase.co",
+  Deno.env.get("SERVICE_ROLE_KEY")! // Service role key for full access
+);
+
+serve(async (req) => {
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
+  try {
+    const { code, userId } = await req.json();
+
+    // Exchange the GitHub code for an access token
+    const response = await fetch("https://github.com/login/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        client_id: "Iv23liWPNmxhVbj0A2o5",
+        client_secret: Deno.env.get("GITHUB_CLIENT_SECRET"), // Securely stored in env
+        code,
+      }),
+    });
+
+    const data = await response.json();
+    const accessToken = data.access_token;
+
+    if (accessToken) {
+      // Store the access token in the user_tokens table
+      const { error } = await supabase
+        .from("user_tokens")
+        .insert({ user_id: userId, github_token: accessToken });
+
+      if (error) {
+        console.error("Error storing access token:", error);
+        return new Response(JSON.stringify({ error: "Failed to store access token" }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ message: "Access token stored successfully" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      return new Response(JSON.stringify({ error: "Failed to obtain access token" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  } catch (error) {
+    console.error("Error in Edge Function:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-token-exchange/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-token-exchange/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+
+const GITHUB_API_URL = "https://api.github.com";
+const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  const basePath = "/functions/v1/github-mcp";
+
+  // Handle SSE connections
+  if (url.pathname === `${basePath}/sse`) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("data: github-mcp connected\n\n");
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } 
+  // Handle POST requests to /messages
+  else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { tool, args } = body;
+
+      if (!GITHUB_TOKEN) {
+        return new Response(
+          JSON.stringify({ error: "GitHub token not configured" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (tool === "create_or_update_file") {
+        const { owner, repo, path, content, message, branch, sha } = args;
+        const encodedContent = btoa(unescape(encodeURIComponent(content)));
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${path}`, {
+          method: "PUT",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message,
+            content: encodedContent,
+            branch,
+            sha,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "push_files") {
+        const { owner, repo, branch, files, message } = args;
+        // Simplified implementation: push one file at a time for now
+        let lastCommitSha;
+        for (const file of files) {
+          const { path, content } = file;
+          const encodedContent = btoa(unescape(encodeURIComponent(content)));
+          const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${path}`, {
+            method: "PUT",
+            headers: {
+              "Authorization": `token ${GITHUB_TOKEN}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              message,
+              content: encodedContent,
+              branch,
+              sha: lastCommitSha,
+            }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            return new Response(
+              JSON.stringify({ error: errorData.message }),
+              { status: response.status, headers: { "Content-Type": "application/json" } }
+            );
+          }
+          lastCommitSha = (await response.json()).commit.sha;
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "Files pushed successfully" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "search_repositories") {
+        const { query, page = 1, perPage = 30 } = args;
+        const response = await fetch(
+          `${GITHUB_API_URL}/search/repositories?q=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`,
+          {
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data.items) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "create_repository") {
+        const { name, description, private: isPrivate, autoInit } = args;
+        const response = await fetch(`${GITHUB_API_URL}/user/repos`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            description,
+            private: isPrivate,
+            auto_init: autoInit,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "get_file_contents") {
+        const { owner, repo, path, branch } = args;
+        const response = await fetch(
+          `${GITHUB_API_URL}/repos/${owner}/${repo}/contents/${path}${branch ? `?ref=${branch}` : ""}`,
+          {
+            headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: atob(data.content) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "create_issue") {
+        const { owner, repo, title, body, assignees, labels, milestone } = args;
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/issues`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            body,
+            assignees,
+            labels,
+            milestone,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "create_pull_request") {
+        const { owner, repo, title, body, head, base, draft, maintainer_can_modify } = args;
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/pulls`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            body,
+            head,
+            base,
+            draft,
+            maintainer_can_modify,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "fork_repository") {
+        const { owner, repo, organization } = args;
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/forks`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: organization ? JSON.stringify({ organization }) : undefined,
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "create_branch") {
+        const { owner, repo, branch, from_branch } = args;
+        const refResponse = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/git/refs/heads${from_branch ? `/${from_branch}` : ""}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!refResponse.ok) {
+          const errorData = await refResponse.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: refResponse.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const refData = await refResponse.json();
+        const sha = refData.object.sha;
+        const branchResponse = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/git/refs`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ref: `refs/heads/${branch}`,
+            sha,
+          }),
+        });
+        if (!branchResponse.ok) {
+          const errorData = await branchResponse.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: branchResponse.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await branchResponse.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "list_issues") {
+        const { owner, repo, state, labels, sort, direction, since, page, per_page } = args;
+        const params = new URLSearchParams({
+          ...(state && { state }),
+          ...(labels && { labels: labels.join(",") }),
+          ...(sort && { sort }),
+          ...(direction && { direction }),
+          ...(since && { since }),
+          ...(page && { page: page.toString() }),
+          ...(per_page && { per_page: per_page.toString() }),
+        });
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/issues?${params}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "update_issue") {
+        const { owner, repo, issue_number, title, body, state, labels, assignees, milestone } = args;
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/issues/${issue_number}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title,
+            body,
+            state,
+            labels,
+            assignees,
+            milestone,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "add_issue_comment") {
+        const { owner, repo, issue_number, body } = args;
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/issues/${issue_number}/comments`, {
+          method: "POST",
+          headers: {
+            "Authorization": `token ${GITHUB_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ body }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "search_code") {
+        const { q, sort, order, per_page, page } = args;
+        const params = new URLSearchParams({
+          q,
+          ...(sort && { sort }),
+          ...(order && { order }),
+          ...(per_page && { per_page: per_page.toString() }),
+          ...(page && { page: page.toString() }),
+        });
+        const response = await fetch(`${GITHUB_API_URL}/search/code?${params}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data.items) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "search_issues") {
+        const { q, sort, order, per_page, page } = args;
+        const params = new URLSearchParams({
+          q,
+          ...(sort && { sort }),
+          ...(order && { order }),
+          ...(per_page && { per_page: per_page.toString() }),
+          ...(page && { page: page.toString() }),
+        });
+        const response = await fetch(`${GITHUB_API_URL}/search/issues?${params}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data.items) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "search_users") {
+        const { q, sort, order, per_page, page } = args;
+        const params = new URLSearchParams({
+          q,
+          ...(sort && { sort }),
+          ...(order && { order }),
+          ...(per_page && { per_page: per_page.toString() }),
+          ...(page && { page: page.toString() }),
+        });
+        const response = await fetch(`${GITHUB_API_URL}/search/users?${params}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data.items) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "list_commits") {
+        const { owner, repo, page, per_page, sha } = args;
+        const params = new URLSearchParams({
+          ...(page && { page: page.toString() }),
+          ...(per_page && { per_page: per_page.toString() }),
+          ...(sha && { sha }),
+        });
+        const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/commits?${params}`, {
+          headers: { "Authorization": `token ${GITHUB_TOKEN}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          return new Response(
+            JSON.stringify({ error: errorData.message }),
+            { status: response.status, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const data = await response.json();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(data) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Tool not found" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
+  return new Response("Not Found", { status: 404 });
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/github-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/git-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://zxkvmgmcjuigfgevwdrc.supabase.co",
+  Deno.env.get("SERVICE_ROLE_KEY")!
+);
+const bucket = "chatguru-files";
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  const basePath = "/functions/v1/git-mcp";
+
+  // Handle SSE connections
+  if (url.pathname === `${basePath}/sse`) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("data: git-mcp connected\n\n");
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } 
+  // Handle POST requests to /messages
+  else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { tool, args } = body;
+
+      if (tool === "git_status") {
+        const { repo_path } = args;
+        const { data, error } = await supabase.storage.from(bucket).list(repo_path);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const status = data.map((item) => `${item.name}: tracked`).join("\n");
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: status || "No changes" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_diff_unstaged" || tool === "git_diff_staged") {
+        const { repo_path } = args;
+        // Simplified: list files as a diff-like output
+        const { data, error } = await supabase.storage.from(bucket).list(repo_path);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const diff = data.map((item) => `diff --git a/${item.name} b/${item.name}`).join("\n");
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: diff || "No differences" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_commit") {
+        const { repo_path, message } = args;
+        // Simulate commit by adding a commit log entry
+        const commitPath = `${repo_path}/.git/commits/${Date.now()}`;
+        const { error } = await supabase.storage.from(bucket).upload(
+          commitPath,
+          JSON.stringify({ message, timestamp: new Date().toISOString() }),
+          { contentType: "application/json" }
+        );
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: `Committed with hash: ${commitPath.split("/").pop()}` }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_add") {
+        const { repo_path, files } = args;
+        // In this context, "add" is a no-op since files are already in Storage
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: `Staged files: ${files.join(", ")}` }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_reset") {
+        const { repo_path } = args;
+        // Simplified: no real staging to reset in this context
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "Staging area reset" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_log") {
+        const { repo_path, max_count = 10 } = args;
+        const { data, error } = await supabase.storage.from(bucket).list(`${repo_path}/.git/commits`);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const commits = await Promise.all(
+          data.slice(0, max_count).map(async (item) => {
+            const { data: commitData, error: fetchError } = await supabase.storage
+              .from(bucket)
+              .download(`${repo_path}/.git/commits/${item.name}`);
+            if (fetchError) return `Error fetching commit ${item.name}`;
+            const commit = JSON.parse(await commitData.text());
+            return `${item.name} - ${commit.message} (${commit.timestamp})`;
+          })
+        );
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: commits.join("\n") }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "git_create_branch") {
+        const { repo_path, branch_name } = args;
+        const branchPath = `${repo_path}/.git/refs/heads/${branch_name}`;
+        const { error } = await supabase.storage.from(bucket).upload(branchPath, "", {
+          contentType: "text/plain",
+        });
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: `Branch ${branch_name} created` }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Tool not found" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
+  return new Response("Not Found", { status: 404 });
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/git-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/git-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.1";
+
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://zxkvmgmcjuigfgevwdrc.supabase.co";
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY");
+
+if (!supabaseKey) {
+  console.error("Missing SERVICE_ROLE_KEY environment variable");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey!);
+
+// CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+// Fetch most recent access token
+async function getAccessToken() {
+  try {
+    const { data, error } = await supabase
+      .from("tokens")
+      .select("access_token")
+      .eq("provider", "gdrive")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) throw new Error("No token found");
+    return data.access_token;
+  } catch (error) {
+    console.error("Token retrieval failed:", error);
+    throw error;
+  }
+}
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204,
+    });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const basePath = "/functions/v1/gdrive-mcp";
+
+    // SSE endpoint
+    if (url.pathname === `${basePath}/sse`) {
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue("data: gdrive-mcp connected\n\n");
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    } 
+    // Message endpoint
+    else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+      const body = await req.json();
+      const { tool, args } = body;
+      
+      if (tool === "search") {
+        const { query } = args;
+        try {
+          const accessToken = await getAccessToken();
+          const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query || "")}`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          const data = await response.json();
+          
+          return new Response(JSON.stringify({
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                files: data.files.map((file) => ({ name: file.name, mimeType: file.mimeType }))
+              })
+            }]
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        } catch (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+      
+      return new Response(JSON.stringify({ error: "Tool not found" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    // Not found
+    return new Response(JSON.stringify({ error: "Not found" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Request handling error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-auth/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.1";
+
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get("SUPABASE_URL") || "https://zxkvmgmcjuigfgevwdrc.supabase.co";
+const supabaseKey = Deno.env.get("SERVICE_ROLE_KEY");
+
+if (!supabaseKey) {
+  console.error("Missing SERVICE_ROLE_KEY environment variable");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey!);
+
+// CORS headers
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, {
+      headers: corsHeaders,
+      status: 204,
+    });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const code = url.searchParams.get("code");
+    
+    if (!code) {
+      return new Response(JSON.stringify({ error: "Missing authorization code" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const clientId = Deno.env.get("GDRIVE_CLIENT_ID");
+    const clientSecret = Deno.env.get("GDRIVE_CLIENT_SECRET");
+    const redirectUri = "https://zxkvmgmcjuigfgevwdrc.supabase.co/functions/v1/gdrive-auth";
+
+    if (!clientId || !clientSecret) {
+      console.error("Missing Google Drive API credentials");
+      return new Response(JSON.stringify({ error: "Server configuration error" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+    
+    if (tokenData.error) {
+      console.error("Token exchange error:", tokenData);
+      return new Response(JSON.stringify({ error: "Authorization failed" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { access_token, refresh_token } = tokenData;
+
+    // Store tokens in database
+    const { error } = await supabase
+      .from("tokens")
+      .insert({ access_token, refresh_token, provider: "gdrive" });
+
+    if (error) {
+      console.error("Database error:", error);
+      return new Response(JSON.stringify({ error: "Failed to store tokens" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Return success HTML
+    const successHtml = `<!DOCTYPE html><html><head><title>Auth Success</title></head><body><h1>Authentication Successful!</h1><p>You can close this window.</p><script>setTimeout(() => window.close(), 3000);</script></body></html>`;
+    return new Response(successHtml, {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "text/html" },
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-auth/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/gdrive-auth/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/filesystem-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://zxkvmgmcjuigfgevwdrc.supabase.co",
+  Deno.env.get("SERVICE_ROLE_KEY")!
+);
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  const basePath = "/functions/v1/filesystem-mcp";
+  const bucket = "chatguru-files";
+
+  // Handle SSE connections
+  if (url.pathname === `${basePath}/sse`) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("data: filesystem-mcp connected\n\n");
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } 
+  // Handle POST requests to /messages
+  else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { tool, args } = body;
+
+      if (tool === "read_file") {
+        const { path } = args;
+        const { data, error } = await supabase.storage.from(bucket).download(path);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const content = await data.text();
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: content }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "read_multiple_files") {
+        const { paths } = args;
+        const results = [];
+        for (const path of paths) {
+          const { data, error } = await supabase.storage.from(bucket).download(path);
+          if (error) {
+            results.push(`Error reading ${path}: ${error.message}`);
+          } else {
+            results.push(await data.text());
+          }
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: results.join("\n") }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "write_file") {
+        const { path, content } = args;
+        const { error } = await supabase.storage.from(bucket).upload(path, content, {
+          contentType: "text/plain",
+          upsert: true,
+        });
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "File written successfully" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "create_directory") {
+        const { path } = args;
+        // In Supabase Storage, directories are implicit; create a dummy file to ensure the path exists
+        const { error } = await supabase.storage.from(bucket).upload(`${path}/.keep`, "", {
+          contentType: "text/plain",
+          upsert: true,
+        });
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "Directory created successfully" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "list_directory") {
+        const { path } = args;
+        const { data, error } = await supabase.storage.from(bucket).list(path);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const files = data
+          .map((item) => {
+            if (item.name === ".") return null;
+            if (item.id) {
+              return `[FILE] ${item.name}`;
+            } else {
+              return `[DIR] ${item.name}`;
+            }
+          })
+          .filter(Boolean);
+        const list = files.join("\n");
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: list }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "move_file") {
+        const { source, destination } = args;
+        const { error } = await supabase.storage.from(bucket).move(source, destination);
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: "File moved successfully" }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "search_files") {
+        const { path, pattern } = args;
+        const { data, error } = await supabase.storage.from(bucket).list(path, { search: pattern });
+        if (error) {
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const matches = data.map((item) => `${path}/${item.name}`).join("\n");
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: matches }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "get_file_info") {
+        const { path } = args;
+        const { data, error } = await supabase.storage.from(bucket).list(path, { limit: 1, offset: 0 });
+        if (error || !data || data.length === 0) {
+          return new Response(
+            JSON.stringify({ error: "File not found" }),
+            { status: 404, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        const file = data[0];
+        const info = {
+          size: file.metadata?.size,
+          created_at: file.created_at,
+          updated_at: file.updated_at,
+          type: file.id ? "file" : "directory",
+        };
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: JSON.stringify(info) }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } 
+      else if (tool === "list_allowed_directories") {
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: bucket }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Tool not found" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
+  return new Response("Not Found", { status: 404 });
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/filesystem-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/filesystem-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/fetch-mcp/deno.json
+==================================================
+
+{
+  "imports": {}
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/fetch-mcp/index.ts
+==================================================
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.35-alpha/deno-dom-wasm.ts";
+
+serve(async (req) => {
+  const url = new URL(req.url);
+  const basePath = "/functions/v1/fetch-mcp";
+
+  // Handle SSE connections
+  if (url.pathname === `${basePath}/sse`) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue("data: fetch-mcp connected\n\n");
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } 
+  // Handle POST requests to /messages
+  else if (url.pathname === `${basePath}/messages` && req.method === "POST") {
+    try {
+      const body = await req.json();
+      const { tool, args } = body;
+
+      if (tool === "fetch") {
+        const { url: fetchUrl, max_length = 5000, start_index = 0, raw = false } = args;
+
+        if (!fetchUrl) {
+          return new Response(
+            JSON.stringify({ error: "URL is required" }),
+            { status: 400, headers: { "Content-Type": "application/json" } }
+          );
+        }
+
+        const response = await fetch(fetchUrl);
+        if (!response.ok) {
+          return new Response(
+            JSON.stringify({ error: `Failed to fetch URL: ${response.statusText}` }),
+            { status: 500, headers: { "Content-Type": "application/json" } }
+          );
+        }
+
+        const content = await response.text();
+        let processedContent = content;
+
+        if (!raw) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(content, "text/html");
+          if (doc) {
+            processedContent = doc.body.textContent || "";
+          } else {
+            processedContent = "Failed to parse HTML";
+          }
+        }
+
+        const chunk = processedContent.slice(start_index, start_index + max_length);
+
+        return new Response(
+          JSON.stringify({
+            content: [{ type: "text", text: chunk }],
+          }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Tool not found" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+  }
+
+  return new Response("Not Found", { status: 404 });
+});
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/supabase/functions/fetch-mcp/.npmrc
+==================================================
+
+# Configuration for private npm package dependencies
+# For more information on using private registries with Edge Functions, see:
+# https://supabase.com/docs/guides/functions/import-maps#importing-from-private-registries
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/update-password.html
+==================================================
+
+---
+layout: default
+title: Update Password - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <title>Update Password - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Update Password</h1>
+    <div id="update-password-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="password">New Password</label>
+        <input id="password" type="password" required minlength="8" />
+      </div>
+      
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input id="confirm-password" type="password" required minlength="8" />
+      </div>
+      
+      <button type="button" id="update-button">Update Password</button>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirm-password');
+      const updateButton = document.getElementById('update-button');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+      const updateForm = document.getElementById('update-password-form');
+      
+      const session = await checkAuthStatus();
+      if (!session) {
+        updateForm.innerHTML = `
+          <div class="error-message">
+            You must be logged in to update your password. This link may have expired.
+          </div>
+          <div class="auth-links">
+            <a href="/signin.html" class="button primary-button">Go to Sign In</a>
+          </div>
+        `;
+        return;
+      }
+
+      updateButton.addEventListener('click', async function() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        if (password !== confirmPassword) {
+          errorMessage.textContent = 'Passwords do not match';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        if (password.length < 8) {
+          errorMessage.textContent = 'Password must be at least 8 characters';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        try {
+          updateButton.disabled = true;
+          updateButton.textContent = 'Updating...';
+          const { error } = await updateUserPassword(password);
+          if (error) throw error;
+          successMessage.textContent = 'Password updated successfully!';
+          successMessage.style.display = 'block';
+          passwordInput.value = '';
+          confirmPasswordInput.value = '';
+          setTimeout(() => { window.location.href = '/'; }, 2000);
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred when updating password';
+          errorMessage.style.display = 'block';
+          updateButton.disabled = false;
+          updateButton.textContent = 'Update Password';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/signup.html
+==================================================
+
+---
+layout: default
+title: Sign Up - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .oauth-options {
+      margin: 20px 0;
+    }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+  </style>
+  <title>Sign Up - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Create Account</h1>
+    <div id="signup-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" required />
+      </div>
+      
+      <button type="button" id="signup-button">Sign Up</button>
+      
+      <hr />
+      
+      <div class="oauth-options">
+        <button type="button" id="google-signup">Sign up with Google</button>
+      </div>
+      
+      <div class="auth-links">
+        Already have an account? <a href="/signin.html">Sign In</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const signupButton = document.getElementById('signup-button');
+      const googleSignupButton = document.getElementById('google-signup');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      signupButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) {
+          errorMessage.textContent = 'Please enter both email and password';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          signupButton.disabled = true;
+          signupButton.textContent = 'Signing up...';
+          const { data, error } = await signUpWithEmail(email, password);
+          if (error) throw error;
+          successMessage.textContent = 'Success! Please check your email for confirmation link.';
+          successMessage.style.display = 'block';
+          emailInput.value = '';
+          passwordInput.value = '';
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during signup';
+          errorMessage.style.display = 'block';
+        } finally {
+          signupButton.disabled = false;
+          signupButton.textContent = 'Sign Up';
+        }
+      });
+
+      googleSignupButton.addEventListener('click', async function() {
+        try {
+          errorMessage.style.display = 'none';
+          successMessage.style.display = 'none';
+          await signInWithGoogle();
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during Google signup';
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/signin.html
+==================================================
+
+---
+layout: default
+title: Sign In - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .auth-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .oauth-options {
+      margin: 20px 0;
+    }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+  </style>
+  <title>Sign In - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Sign In</h1>
+    <div id="signin-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" required />
+      </div>
+      
+      <div class="auth-actions">
+        <button type="button" id="signin-button">Sign In</button>
+        <button type="button" id="magic-link-button">Send Magic Link</button>
+      </div>
+      
+      <div class="auth-links">
+        <a href="/reset-password.html">Forgot your password?</a>
+      </div>
+      
+      <hr />
+      
+      <div class="oauth-options">
+        <button type="button" id="google-signin">Sign in with Google</button>
+      </div>
+      
+      <div class="auth-links">
+        Don't have an account? <a href="/signup.html">Sign Up</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const signinButton = document.getElementById('signin-button');
+      const magicLinkButton = document.getElementById('magic-link-button');
+      const googleSigninButton = document.getElementById('google-signin');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      signinButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) {
+          errorMessage.textContent = 'Please enter both email and password';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          signinButton.disabled = true;
+          signinButton.textContent = 'Signing in...';
+          const { data, error } = await signInWithEmail(email, password);
+          if (error) throw error;
+          window.location.href = "/";
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during sign in';
+          errorMessage.style.display = 'block';
+          signinButton.disabled = false;
+          signinButton.textContent = 'Sign In';
+        }
+      });
+
+      magicLinkButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        if (!email) {
+          errorMessage.textContent = 'Please enter your email address';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          magicLinkButton.disabled = true;
+          magicLinkButton.textContent = 'Sending...';
+          const { error } = await signInWithMagicLink(email);
+          if (error) throw error;
+          successMessage.textContent = 'Magic link sent! Check your email.';
+          successMessage.style.display = 'block';
+          passwordInput.value = '';
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred when sending magic link';
+          errorMessage.style.display = 'block';
+        } finally {
+          magicLinkButton.disabled = false;
+          magicLinkButton.textContent = 'Send Magic Link';
+        }
+      });
+
+      googleSigninButton.addEventListener('click', async function() {
+        try {
+          errorMessage.style.display = 'none';
+          successMessage.style.display = 'none';
+          await signInWithGoogle();
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during Google sign in';
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/reset-password.html
+==================================================
+
+---
+layout: default
+title: Reset Password - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <title>Reset Password - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Reset Password</h1>
+    <div id="reset-password-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+      </div>
+      
+      <button type="button" id="reset-button">Send Reset Link</button>
+      
+      <div class="auth-links">
+        <a href="/signin.html">Back to Sign In</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const resetButton = document.getElementById('reset-button');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      resetButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        if (!email) {
+          errorMessage.textContent = 'Please enter your email address';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          resetButton.disabled = true;
+          resetButton.textContent = 'Sending...';
+          const { error } = await resetPassword(email);
+          if (error) throw error;
+          successMessage.textContent = 'Password reset link sent! Check your email.';
+          successMessage.style.display = 'block';
+          emailInput.value = '';
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred when sending reset link';
+          errorMessage.style.display = 'block';
+        } finally {
+          resetButton.disabled = false;
+          resetButton.textContent = 'Send Reset Link';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/profile.html
+==================================================
+
+---
+layout: default
+title: User Profile - ChatGuru
+---
+
+<div class="profile-container protected-content" style="display: none;">
+  <h1>User Profile</h1>
+  
+  <div class="loading-indicator" id="loading-indicator">Loading profile data...</div>
+  
+  <div id="profile-content" style="display: none;">
+    <div class="error-message" id="error-message"></div>
+    <div class="success-message" id="success-message"></div>
+    
+    <div class="profile-info">
+      <div class="info-item">
+        <strong>Email:</strong>
+        <span id="user-email"></span>
+      </div>
+      <div class="info-item">
+        <strong>User ID:</strong>
+        <span id="user-id"></span>
+      </div>
+    </div>
+    
+    <div class="profile-form">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" type="text" />
+      </div>
+      
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" />
+      </div>
+      
+      <div class="form-group">
+        <label for="website">Website</label>
+        <input id="website" type="url" />
+      </div>
+      
+      <button type="button" id="update-profile-button">Update Profile</button>
+    </div>
+    
+    <div class="connected-accounts">
+      <h3>Connected Accounts</h3>
+      <ul id="connected-providers"></ul>
+      <button id="connect-github-button" style="display: none;">Connect GitHub Account</button>
+      <p class="note">Note: Please use a GitHub account with the same email as your ChatGuru account.</p>
+    </div>
+    
+    <div class="auth-actions">
+      <button type="button" id="signout-button" class="danger-button">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="auth-redirect" id="auth-redirect" style="display: none;">
+  <h2>Please sign in to view your profile</h2>
+  <p>You need to be signed in to access this page.</p>
+  <a href="/signin.html" class="button primary-button">Sign In</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const profileContent = document.getElementById('profile-content');
+    const authRedirect = document.getElementById('auth-redirect');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+    const userEmail = document.getElementById('user-email');
+    const userId = document.getElementById('user-id');
+    const fullNameInput = document.getElementById('fullName');
+    const usernameInput = document.getElementById('username');
+    const websiteInput = document.getElementById('website');
+    const updateProfileButton = document.getElementById('update-profile-button');
+    const signoutButton = document.getElementById('signout-button');
+    const connectGithubButton = document.getElementById('connect-github-button');
+    
+    const supabaseUrl = 'https://zxkvmgmcjuigfgevwdrc.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4NTI2OTEsImV4cCI6MjA1ODQyODY5MX0.fTxsFd_NN4p2i2giUsY1FvFm8hlhrBJ-7ycso4ux8I8';
+    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        loadingIndicator.style.display = 'none';
+        authRedirect.style.display = 'block';
+        return;
+      }
+      userEmail.textContent = user.email;
+      userId.textContent = user.id;
+      
+      try {
+        await ensureProfilesTable();
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('full_name, username, website')
+          .eq('id', user.id)
+          .single();
+        if (profile) {
+          fullNameInput.value = profile.full_name || '';
+          usernameInput.value = profile.username || '';
+          websiteInput.value = profile.website || '';
+        }
+      } catch (e) {
+        console.error('Error fetching profile:', e);
+      }
+      
+      loadingIndicator.style.display = 'none';
+      profileContent.style.display = 'block';
+      
+      const providers = []; // Populate connected providers as needed.
+      if (!providers.includes('github')) {
+        connectGithubButton.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      loadingIndicator.style.display = 'none';
+      authRedirect.style.display = 'block';
+    }
+    
+    async function ensureProfilesTable() {
+      try {
+        await supabase.rpc('create_profiles_table_if_not_exists');
+      } catch (error) {
+        console.error('RPC not available, will create profile on update if needed');
+      }
+    }
+    
+    updateProfileButton.addEventListener('click', async function() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+      try {
+        const user = await getCurrentUser();
+        if (!user) throw new Error('User not logged in');
+        updateProfileButton.disabled = true;
+        updateProfileButton.textContent = 'Updating...';
+        const updates = {
+          id: user.id,
+          full_name: fullNameInput.value,
+          username: usernameInput.value,
+          website: websiteInput.value,
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await supabase
+          .from('profiles')
+          .upsert(updates, { onConflict: 'id' });
+        if (error) throw error;
+        successMessage.textContent = 'Profile updated successfully!';
+        successMessage.style.display = 'block';
+      } catch (error) {
+        errorMessage.textContent = error.message || 'An error occurred when updating profile';
+        errorMessage.style.display = 'block';
+      } finally {
+        updateProfileButton.disabled = false;
+        updateProfileButton.textContent = 'Update Profile';
+      }
+    });
+    
+    signoutButton.addEventListener('click', async function() {
+      try {
+        await signOut();
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        errorMessage.textContent = 'Error signing out. Please try again.';
+        errorMessage.style.display = 'block';
+      }
+    });
+    
+    connectGithubButton.addEventListener('click', () => {
+      const CLIENT_ID = 'Iv23liWPNmxhVbj0A2o5';
+      const REDIRECT_URI = 'https://damionr.github.io/ChatGuru/auth/github/callback';
+      const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
+      window.location.href = githubAuthUrl;
+    });
+  });
+</script>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/auth/github/callback.html
+==================================================
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>GitHub Authentication</title>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f5f5;
+        text-align: center;
+        padding-top: 50px;
+      }
+      .spinner {
+        margin: auto;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3b82f6;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .message {
+        font-size: 1.2em;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spinner"></div>
+    <p class="message">Processing GitHub authentication...</p>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        localStorage.setItem('github_auth_code', code);
+        setTimeout(() => {
+          window.location.href = '/profile.html';
+        }, 1500);
+      } else {
+        document.body.innerHTML = '<p class="message" style="color: red;">Authentication failed. Please try again.</p>';
+      }
+    </script>
+  </body>
+</html>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/supabase-client.js
+==================================================
+
+// Initialize the Supabase client
+const supabaseUrl = 'https://zxkvmgmcjuigfgevwdrc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4NTI2OTEsImV4cCI6MjA1ODQyODY5MX0.fTxsFd_NN4p2i2giUsY1FvFm8hlhrBJ-7ycso4ux8I8';
+const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+// Handle auth state changes
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session.user);
+    localStorage.setItem('supabase.auth.token', JSON.stringify(session));
+    updateAuthUI(true);
+  } else if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+    localStorage.removeItem('supabase.auth.token');
+    updateAuthUI(false);
+  }
+});
+
+// Update UI based on auth state
+function updateAuthUI(isAuthenticated) {
+  const authButtons = document.querySelectorAll('.auth-button');
+  const protectedContent = document.querySelectorAll('.protected-content');
+  const userNavItems = document.querySelectorAll('.user-nav-item');
+  const guestNavItems = document.querySelectorAll('.guest-nav-item');
+
+  if (isAuthenticated) {
+    // Show authenticated content
+    authButtons.forEach(btn => {
+      if (btn.dataset.authState === 'authenticated') {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+    protectedContent.forEach(el => el.style.display = 'block');
+    userNavItems.forEach(el => el.style.display = 'block');
+    guestNavItems.forEach(el => el.style.display = 'none');
+  } else {
+    // Show unauthenticated content
+    authButtons.forEach(btn => {
+      if (btn.dataset.authState === 'unauthenticated') {
+        btn.style.display = 'block';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+    protectedContent.forEach(el => el.style.display = 'none');
+    userNavItems.forEach(el => el.style.display = 'none');
+    guestNavItems.forEach(el => el.style.display = 'block');
+  }
+}
+
+// Check if user is already logged in on page load
+async function checkAuthStatus() {
+  const { data: { session } } = await supabase.auth.getSession();
+  updateAuthUI(!!session);
+  return session;
+}
+
+// Auth functions
+async function signUpWithEmail(email, password) {
+  return await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth-callback.html`,
+    },
+  });
+}
+
+async function signInWithEmail(email, password) {
+  return await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+}
+
+async function signInWithMagicLink(email) {
+  return await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${window.location.origin}/auth-callback.html`,
+    },
+  });
+}
+
+async function signInWithGoogle() {
+  return await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth-callback.html`,
+    },
+  });
+}
+
+async function resetPassword(email) {
+  return await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/update-password.html`,
+  });
+}
+
+async function updateUserPassword(password) {
+  return await supabase.auth.updateUser({
+    password,
+  });
+}
+
+async function signOut() {
+  return await supabase.auth.signOut();
+}
+
+// Get current user
+async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', checkAuthStatus);
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/chat/mcpClient.js
+==================================================
+
+// /assets/js/chat/mcpClient.js
+
+// Use an environment-based endpoint: local if running on localhost, otherwise production
+const MCP_ENDPOINT =
+  window.location.hostname === "localhost"
+    ? "http://localhost:3001"
+    : "https://zxkvmgmcjuigfgevwdrc.supabase.co/functions/v1";
+
+export class CustomMCPClient {
+  constructor({ sseUrl = `${MCP_ENDPOINT}/sse`, postUrl = `${MCP_ENDPOINT}/messages` } = {}) {
+    this.sseUrl = sseUrl;
+    this.postUrl = postUrl;
+    this.eventSource = new EventSource(sseUrl);
+    this.eventSource.onmessage = (event) => {
+      console.log("MCP SSE Message:", JSON.parse(event.data));
+    };
+  }
+
+  async sendMessage(message) {
+    const response = await fetch(this.postUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(message),
+    });
+    return response.json();
+  }
+
+  async readResource(uri) {
+    const message = { type: "readResource", params: { uri } };
+    return this.sendMessage(message);
+  }
+
+  async callTool({ name, arguments: toolArguments }) {
+    const message = { type: "callTool", params: { name, arguments: toolArguments } };
+    return this.sendMessage(message);
+  }
+
+  close() {
+    this.eventSource.close();
+  }
+}
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/chat/conversationHistory.js
+==================================================
+
+import { supabase } from "../../js/supabase-client.js";
+
+// Save the current conversation history for the logged‑in user.
+// Conversation data is stored as JSON in the "conversations" table, keyed by user_id.
+export async function saveConversation(userId, conversationHistory) {
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .upsert({
+        user_id: userId,
+        conversation: JSON.stringify(conversationHistory),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error("Error saving conversation history:", err);
+    return null;
+  }
+}
+
+// Load the conversation history for the logged‑in user.
+export async function loadConversations(userId) {
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("conversation, updated_at")
+      .eq("user_id", userId)
+      .single();
+    if (error && error.code !== "PGRST116") {
+      throw error;
+    }
+    if (data && data.conversation) {
+      return { conversation: JSON.parse(data.conversation), updated_at: data.updated_at };
+    } else {
+      return { conversation: [], updated_at: null };
+    }
+  } catch (err) {
+    console.error("Error loading conversation history:", err);
+    return { conversation: [], updated_at: null };
+  }
+}
+
+// Display conversation history in the UI.
+export function displayConversations(conversationData) {
+  const container = document.getElementById("conversation-history");
+  if (!container) return;
+  container.innerHTML = "";
+  const { conversation, updated_at } = conversationData;
+  if (conversation.length === 0) {
+    container.innerHTML = "<p>No previous conversations found.</p>";
+    return;
+  }
+  // Create a conversation item representing the last conversation.
+  const convItem = document.createElement("div");
+  convItem.className = "conversation-item";
+  convItem.textContent = `Last conversation: ${new Date(updated_at).toLocaleString()}`;
+  convItem.addEventListener("click", () => {
+    // Set the global conversation history and reload chat messages.
+    window.conversationHistory = conversation;
+    const chatWindow = document.getElementById("chat-window");
+    chatWindow.innerHTML = "";
+    conversation.forEach((msg) => {
+      import("./chatRenderer.js").then((module) => {
+        module.addMessage(msg.role, [{ type: "text", text: msg.content }]);
+      });
+    });
+  });
+  container.appendChild(convItem);
+}
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/chat/chatSettings.js
+==================================================
+
+// /Users/damionrashford/ChatGuru/assets/js/chat/chatSettings.js
+
+export function loadSettings() {
+    document.getElementById("api-key").value = localStorage.getItem("chatguru_api_key") || "";
+    document.getElementById("system-prompt").value = localStorage.getItem("chatguru_system_prompt") || "";
+    document.getElementById("temperature").value = localStorage.getItem("chatguru_temperature") || "1.0";
+    document.getElementById("top-p").value = localStorage.getItem("chatguru_top_p") || "1.0";
+    document.getElementById("top-k").value = localStorage.getItem("chatguru_top_k") || "0";
+    document.getElementById("frequency-penalty").value = localStorage.getItem("chatguru_frequency_penalty") || "0.0";
+    document.getElementById("presence-penalty").value = localStorage.getItem("chatguru_presence_penalty") || "0.0";
+    document.getElementById("repetition-penalty").value = localStorage.getItem("chatguru_repetition_penalty") || "1.0";
+    document.getElementById("min-p").value = localStorage.getItem("chatguru_min_p") || "0.0";
+    document.getElementById("top-a").value = localStorage.getItem("chatguru_top_a") || "0.0";
+    document.getElementById("seed").value = localStorage.getItem("chatguru_seed") || "";
+    document.getElementById("max-tokens").value = localStorage.getItem("chatguru_max_tokens") || "4096";
+  }
+  
+  export function saveSettings() {
+    localStorage.setItem("chatguru_api_key", document.getElementById("api-key").value);
+    localStorage.setItem("chatguru_system_prompt", document.getElementById("system-prompt").value);
+    localStorage.setItem("chatguru_temperature", document.getElementById("temperature").value);
+    localStorage.setItem("chatguru_top_p", document.getElementById("top-p").value);
+    localStorage.setItem("chatguru_top_k", document.getElementById("top-k").value);
+    localStorage.setItem("chatguru_frequency_penalty", document.getElementById("frequency-penalty").value);
+    localStorage.setItem("chatguru_presence_penalty", document.getElementById("presence-penalty").value);
+    localStorage.setItem("chatguru_repetition_penalty", document.getElementById("repetition-penalty").value);
+    localStorage.setItem("chatguru_min_p", document.getElementById("min-p").value);
+    localStorage.setItem("chatguru_top_a", document.getElementById("top-a").value);
+    localStorage.setItem("chatguru_seed", document.getElementById("seed").value);
+    localStorage.setItem("chatguru_max_tokens", document.getElementById("max-tokens").value);
+  }
+  
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/chat/chatRenderer.js
+==================================================
+
+// /assets/js/chat/chatRenderer.js
+
+export function addMessage(role, contentItems) {
+    const chatWindow = document.getElementById("chat-window");
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${role} fade-in`; // add fade-in for smooth appearance
+  
+    contentItems.forEach((item) => {
+      if (item.type === "text") {
+        const textSpan = document.createElement("span");
+        textSpan.innerHTML = item.text;
+  
+        // If the text looks like an address, make it clickable
+        if (/[\d]+,\s*[A-Za-z]+/.test(item.text)) {
+          textSpan.classList.add("clickable-address");
+          textSpan.style.cursor = "pointer";
+          textSpan.title = "Click to open map";
+          textSpan.addEventListener("click", () => {
+            openMapModal(item.location, item.zoom || 12);
+          });
+        }
+        messageDiv.appendChild(textSpan);
+      } else if (item.type === "map") {
+        // Create a container for the map with a loading spinner overlay
+        const mapContainer = document.createElement("div");
+        mapContainer.style.position = "relative";
+        mapContainer.style.height = "300px";
+        mapContainer.style.width = "100%";
+  
+        // Spinner element
+        const spinner = document.createElement("div");
+        spinner.className = "spinner";
+        spinner.style.position = "absolute";
+        spinner.style.top = "50%";
+        spinner.style.left = "50%";
+        spinner.style.transform = "translate(-50%, -50%)";
+        mapContainer.appendChild(spinner);
+  
+        messageDiv.appendChild(mapContainer);
+  
+        // Lazy load Google Maps API if not already loaded
+        if (typeof google === "undefined" || !google.maps) {
+          loadGoogleMapsAPI()
+            .then(() => {
+              initializeMap(item, mapContainer, spinner);
+            })
+            .catch((err) => {
+              console.error("Error loading Google Maps API:", err);
+              mapContainer.innerHTML = "<p>Error loading map</p>";
+            });
+        } else {
+          initializeMap(item, mapContainer, spinner);
+        }
+      }
+    });
+  
+    chatWindow.appendChild(messageDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+  
+  function initializeMap(item, container, spinner) {
+    const map = new google.maps.Map(container, {
+      zoom: item.zoom || 12,
+      center: item.location,
+    });
+    // Remove spinner once map is loaded
+    spinner.remove();
+  
+    if (item.mapType === "location") {
+      new google.maps.Marker({
+        position: item.location,
+        map: map,
+      });
+    } else if (item.mapType === "directions") {
+      if (google.maps?.geometry?.encoding) {
+        const path = google.maps.geometry.encoding.decodePath(item.polyline);
+        const polyline = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: "#FF0000",
+          strokeOpacity: 1.0,
+          strokeWeight: 2,
+        });
+        polyline.setMap(map);
+  
+        if (item.bounds && item.bounds.northeast && item.bounds.southwest) {
+          const bounds = new google.maps.LatLngBounds(
+            item.bounds.southwest,
+            item.bounds.northeast
+          );
+          map.fitBounds(bounds);
+        }
+      } else {
+        console.error("Google Maps geometry library is not loaded.");
+      }
+    }
+  }
+  
+  // Lazy-load the Google Maps API
+  function loadGoogleMapsAPI() {
+    return new Promise((resolve, reject) => {
+      if (typeof google !== "undefined" && google.maps) {
+        resolve();
+      } else {
+        const script = document.createElement("script");
+        script.src =
+          "https://maps.googleapis.com/maps/api/js?key=AIzaSyCYhgqMfTMImNQQjQb6gzHYtW1EODYPpEI&libraries=geometry";
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      }
+    });
+  }
+  
+  // Function to open a modal map view for clickable addresses
+  function openMapModal(location, zoom) {
+    let modal = document.getElementById("map-modal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "map-modal";
+      modal.style.position = "fixed";
+      modal.style.top = "0";
+      modal.style.left = "0";
+      modal.style.width = "100%";
+      modal.style.height = "100%";
+      modal.style.backgroundColor = "rgba(0,0,0,0.7)";
+      modal.style.display = "flex";
+      modal.style.justifyContent = "center";
+      modal.style.alignItems = "center";
+      modal.style.zIndex = "1000";
+      modal.addEventListener("click", () => {
+        modal.remove();
+      });
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = "";
+    const mapDiv = document.createElement("div");
+    mapDiv.style.width = "80%";
+    mapDiv.style.height = "80%";
+    mapDiv.style.boxShadow = "0 0 10px #000";
+    modal.appendChild(mapDiv);
+  
+    const map = new google.maps.Map(mapDiv, {
+      center: location,
+      zoom: zoom || 12,
+    });
+    new google.maps.Marker({
+      position: location,
+      map: map,
+    });
+  }
+  
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/js/chat/chat.js
+==================================================
+
+// /assets/js/chat/chat.js
+
+import { CustomMCPClient } from "./mcpClient.js";
+import { addMessage } from "./chatRenderer.js";
+import { loadSettings, saveSettings } from "./chatSettings.js";
+import { loadConversations, saveConversation, displayConversations } from "./conversationHistory.js";
+import { supabase } from "../../js/supabase-client.js";
+
+const mcpClient = new CustomMCPClient();
+
+// Global conversation history (array of objects with { role, content })
+window.conversationHistory = [];
+
+// Fetch models dynamically from OpenRouter
+async function fetchModels() {
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/models", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) throw new Error("Failed to fetch models from OpenRouter");
+    const data = await response.json();
+    const modelSelect = document.getElementById("model-select");
+    const freeModels = data.data.filter((model) => model.id.includes(":free"));
+    freeModels.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.id;
+      option.textContent = model.name || model.id;
+      modelSelect.appendChild(option);
+    });
+    window.modelData = freeModels.reduce((acc, model) => {
+      acc[model.id] = {
+        contextLength: model.context_length || (model.top_provider?.context_length || 8192),
+        maxCompletionTokens: model.top_provider?.max_completion_tokens || 4096,
+        pricing: model.pricing || { prompt: "0", completion: "0" },
+        supportedParameters: model.supported_parameters || [
+          "temperature",
+          "top_p",
+          "top_k",
+          "frequency_penalty",
+          "presence_penalty",
+          "repetition_penalty",
+          "min_p",
+          "top_a",
+          "seed",
+          "max_tokens",
+        ],
+      };
+      return acc;
+    }, {});
+  } catch (error) {
+    console.error("Error fetching models:", error);
+    document.getElementById("model-select").innerHTML =
+      '<option value="">Failed to load models</option>';
+    addMessage("assistant", [
+      { type: "text", text: "Failed to load AI models. Please refresh or try again later." },
+    ]);
+  }
+}
+
+// Initialize conversation history for logged-in users.
+async function initConversationHistory() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session && session.user) {
+    const userId = session.user.id;
+    const convData = await loadConversations(userId);
+    window.conversationHistory = convData.conversation || [];
+    displayConversations(convData);
+  }
+}
+
+// Send a notification via MCP
+async function sendNotification(message) {
+  try {
+    const result = await mcpClient.callTool({
+      name: "send-notification",
+      arguments: { message },
+    });
+    addMessage("assistant", [{ type: "text", text: result.content[0].text }]);
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    addMessage("assistant", [{ type: "text", text: "Failed to send notification." }]);
+  }
+}
+
+// Send a message to OpenRouter and update conversation history
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const modelSelect = document.getElementById("model-select");
+  const message = input.value.trim();
+  const selectedModel = modelSelect.value;
+  if (!message) return;
+  if (!selectedModel) {
+    addMessage("assistant", [{ type: "text", text: "Please select a model first." }]);
+    return;
+  }
+  const apiKey = localStorage.getItem("chatguru_api_key");
+  if (!apiKey) {
+    alert("Please set your API key in the settings.");
+    document.getElementById("settings-modal").style.display = "flex";
+    return;
+  }
+  if (!window.modelData || !window.modelData[selectedModel]) {
+    addMessage("assistant", [{ type: "text", text: "AI model data is unavailable. Please refresh the page." }]);
+    return;
+  }
+  
+  addMessage("user", [{ type: "text", text: message }]);
+  input.value = "";
+  addMessage("assistant", [{ type: "text", text: "Thinking..." }]);
+  
+  try {
+    const systemPrompt = localStorage.getItem("chatguru_system_prompt") || "";
+    const temperature = parseFloat(localStorage.getItem("chatguru_temperature")) || 1.0;
+    const topP = parseFloat(localStorage.getItem("chatguru_top_p")) || 1.0;
+    const topK = parseInt(localStorage.getItem("chatguru_top_k")) || 0;
+    const frequencyPenalty = parseFloat(localStorage.getItem("chatguru_frequency_penalty")) || 0.0;
+    const presencePenalty = parseFloat(localStorage.getItem("chatguru_presence_penalty")) || 0.0;
+    const repetitionPenalty = parseFloat(localStorage.getItem("chatguru_repetition_penalty")) || 1.0;
+    const minP = parseFloat(localStorage.getItem("chatguru_min_p")) || 0.0;
+    const topA = parseFloat(localStorage.getItem("chatguru_top_a")) || 0.0;
+    const seed = localStorage.getItem("chatguru_seed") ? parseInt(localStorage.getItem("chatguru_seed")) : null;
+    const maxTokens = parseInt(localStorage.getItem("chatguru_max_tokens")) || 4096;
+
+    if (conversationHistory.length === 0 && systemPrompt) {
+      conversationHistory.push({ role: "system", content: systemPrompt });
+    }
+    conversationHistory.push({ role: "user", content: message });
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: conversationHistory,
+        max_tokens: Math.min(maxTokens, window.modelData[selectedModel].maxCompletionTokens),
+        temperature: temperature,
+        top_p: topP,
+        top_k: topK,
+        frequency_penalty: frequencyPenalty,
+        presence_penalty: presencePenalty,
+        repetition_penalty: repetitionPenalty,
+        min_p: minP,
+        top_a: topA,
+        seed: seed,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to fetch response from OpenRouter");
+    const data = await response.json();
+    const aiResponse = data.choices[0].message.content.trim();
+
+    const chatWindow = document.getElementById("chat-window");
+    chatWindow.removeChild(chatWindow.lastChild);
+    conversationHistory.push({ role: "assistant", content: aiResponse });
+    addMessage("assistant", [{ type: "text", text: aiResponse }]);
+
+    // Save conversation if user is logged in.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && session.user) {
+      await saveConversation(session.user.id, conversationHistory);
+      const convData = await loadConversations(session.user.id);
+      displayConversations(convData);
+    }
+    await sendNotification(`New message: ${message}`);
+  } catch (error) {
+    console.error("Error:", error);
+    const chatWindow = document.getElementById("chat-window");
+    chatWindow.removeChild(chatWindow.lastChild);
+    if (error.message.includes("401")) {
+      addMessage("assistant", [{ type: "text", text: "Invalid API key. Please check your settings." }]);
+    } else {
+      addMessage("assistant", [{ type: "text", text: "Sorry, something went wrong." }]);
+    }
+  }
+}
+
+// Event listeners
+document.getElementById("chat-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+document.getElementById("settings-button").addEventListener("click", () => {
+  document.getElementById("settings-modal").style.display = "flex";
+  loadSettings();
+});
+
+document.getElementById("settings-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveSettings();
+  document.getElementById("settings-modal").style.display = "none";
+  conversationHistory = [];
+  document.getElementById("chat-window").innerHTML = '<p>Start chatting below!</p>';
+});
+
+// Fetch models and initialize conversation history on DOM load.
+document.addEventListener("DOMContentLoaded", () => {
+  fetchModels();
+  initConversationHistory();
+});
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/css/style.css
+==================================================
+
+/* /assets/css/style.css */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    /* Removed overflow:hidden for pages that need scrolling */
+    height: 100%;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    background-color: #f5f5f5;
+  }
+  
+  /* Chat Container */
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+  
+  /* Conversation History */
+  .conversation-history {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .conversation-item {
+    padding: 0.5rem;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+  }
+  .conversation-item:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Headings */
+  h1 {
+    color: #333;
+    text-align: center;
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+  }
+  
+  /* Model Selector */
+  .model-selector {
+    margin-bottom: 1rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .model-selector label {
+    margin-right: 0.5rem;
+    font-weight: 500;
+  }
+  .model-selector select {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    background-color: white;
+    width: 100%;
+    max-width: 300px;
+    box-sizing: border-box;
+  }
+  .model-selector button {
+    padding: 0.5rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+  }
+  .model-selector button:hover {
+    background-color: #2563eb;
+  }
+  
+  /* Chat Window */
+  .chat-window {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #e5e7eb;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+    min-height: 0;
+  }
+  .chat-window p {
+    text-align: center;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  /* Messages */
+  .message {
+    margin-bottom: 1rem;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+  }
+  .message.user {
+    text-align: right;
+  }
+  .message.assistant {
+    text-align: left;
+  }
+  .message span {
+    display: inline-block;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+  .message.user span {
+    background-color: #3b82f6;
+    color: white;
+  }
+  .message.assistant span {
+    background-color: white;
+    color: black;
+  }
+  
+  /* Chat Input */
+  .chat-input {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-top: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  .chat-input textarea {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    resize: none;
+    box-sizing: border-box;
+    height: 60px;
+  }
+  .chat-input button {
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+  }
+  .chat-input button:hover {
+    background-color: #2563eb;
+  }
+  
+  /* Modal Styles */
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Fade-in Animation */
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  
+  /* Spinner for map loading */
+  .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Media Queries for Mobile */
+  @media (max-width: 600px) {
+    .chat-container {
+      padding: 0.5rem;
+    }
+    .model-selector select {
+      max-width: 200px;
+    }
+    .chat-input textarea {
+      height: 50px;
+    }
+    .auth-container {
+      max-width: 90%;
+      margin: 20px auto;
+      padding: 20px;
+    }
+  }
+  
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/assets/css/auth.css
+==================================================
+
+/* Authentication Styles */
+
+/* Container for auth forms */
+.auth-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Form groups */
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    border-color: #0070f3;
+    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+  }
+  
+  /* Buttons */
+  button {
+    display: inline-block;
+    background-color: #0070f3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  button:hover {
+    background-color: #0051cc;
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .danger-button {
+    background-color: #f44336;
+  }
+  
+  .danger-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  .auth-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  /* OAuth buttons */
+  .oauth-options {
+    margin: 20px 0;
+  }
+  
+  .oauth-options button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #4285f4;
+    margin-bottom: 10px;
+  }
+  
+  .oauth-options button:hover {
+    background-color: #3367d6;
+  }
+  
+  /* Messages */
+  .error-message,
+  .success-message {
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  
+  .error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+  }
+  
+  .success-message {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+  }
+  
+  /* Links */
+  .auth-links {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .auth-links a {
+    color: #0070f3;
+    text-decoration: none;
+  }
+  
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Separator */
+  hr {
+    margin: 20px 0;
+    border: 0;
+    height: 1px;
+    background-color: #ddd;
+  }
+  
+  /* Auth callback page */
+  .auth-callback-container {
+    max-width: 400px;
+    margin: 100px auto;
+    text-align: center;
+  }
+  
+  .loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #0070f3;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Auth error page */
+  .auth-error-container {
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .auth-error-container h1 {
+    color: #f44336;
+    margin-bottom: 20px;
+  }
+  
+  .auth-error-container ul {
+    text-align: left;
+    margin: 20px 0;
+    padding-left: 20px;
+  }
+  
+  /* Profile page */
+  .profile-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-info {
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+  }
+  
+  .info-item {
+    margin-bottom: 10px;
+  }
+  
+  .loading-indicator {
+    text-align: center;
+    margin: 30px 0;
+    color: #666;
+  }
+  
+  .auth-redirect {
+    max-width: 500px;
+    margin: 100px auto;
+    text-align: center;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .button {
+    display: inline-block;
+    background-color: #0070f3;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .button:hover {
+    background-color: #0051cc;
+  }
+  
+  .primary-button {
+    background-color: #0070f3;
+  }
+  
+  .secondary-button {
+    background-color: #6c757d;
+  }
+  
+  .secondary-button:hover {
+    background-color: #5a6268;
+  }
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/_layouts/default.html
+==================================================
+
+<!doctype html>
+<html lang="en">
+  {% include head.html %}
+  <body>
+    <!-- Include the unified navigation bar -->
+    {% include nav.html %}
+    
+    <header class="site-header" style="text-align: center; padding: 1rem 0;">
+      <div class="container">
+        <h1>
+          <a href="{{ site.baseurl }}/" style="text-decoration: none; color: #333;">{{ site.title }}</a>
+        </h1>
+      </div>
+    </header>
+    
+    <main class="main-content">
+      <div class="container">
+        {{ content }}
+      </div>
+    </main>
+    
+    <footer class="site-footer" style="text-align: center; padding: 1rem 0; background-color: #f5f5f5;">
+      <div class="container">
+        <p>&copy; {{ site.time | date: '%Y' }} ChatGuru. All rights reserved.</p>
+      </div>
+    </footer>
+    
+    <!-- Load Google Maps JavaScript API with geometry library -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYhgqMfTMImNQQjQb6gzHYtW1EODYPpEI&libraries=geometry" async defer></script>
+    <!-- Load Chat Module as an ES module -->
+    <script type="module" src="{{ site.baseurl }}/assets/js/chat/chat.js"></script>
+  </body>
+</html>
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/_includes/nav.html
+==================================================
+
+<!-- _includes/nav.html -->
+<nav class="main-nav" style="background-color: #f5f5f5; padding: 1rem; font-family: 'Inter', sans-serif;">
+  <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+    <!-- Brand / Logo -->
+    <div class="nav-brand">
+      <a href="{{ '/index.markdown' | relative_url }}" style="font-weight: 600; color: #333; text-decoration: none; font-size: 1.25rem;">ChatGuru</a>
+    </div>
+    <!-- Navigation Links -->
+    <div class="nav-links" style="display: flex; align-items: center;">
+      <!-- Always Visible -->
+      <a href="{{ '/index.markdown' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Chat Home</a>
+      <!-- Guest Links: Visible when not authenticated -->
+      <span class="guest-links" style="display: none;">
+        <a href="{{ '/signin.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign In</a>
+        <a href="{{ '/signup.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign Up</a>
+      </span>
+      <!-- Authenticated Links: Visible when authenticated -->
+      <span class="auth-links" style="display: none;">
+        <a href="{{ '/profile.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Profile</a>
+        <button id="signout-nav-button" class="nav-button" style="margin: 0 1rem; background: none; border: none; color: #333; font-weight: 500; cursor: pointer;">Sign Out</button>
+      </span>
+    </div>
+  </div>
+</nav>
+<script type="module">
+  import { supabase, signOut } from "{{ site.baseurl }}/assets/js/supabase-client.js";
+  
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Check current session using Supabase auth API
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      document.querySelector('.auth-links').style.display = 'inline';
+      document.querySelector('.guest-links').style.display = 'none';
+    } else {
+      document.querySelector('.guest-links').style.display = 'inline';
+      document.querySelector('.auth-links').style.display = 'none';
+    }
+    
+    // Bind sign out event
+    const signoutButton = document.getElementById('signout-nav-button');
+    if (signoutButton) {
+      signoutButton.addEventListener('click', async function() {
+        try {
+          await signOut();
+          window.location.href = '/';
+        } catch (error) {
+          console.error('Error signing out:', error);
+          alert('Error signing out. Please try again.');
+        }
+      });
+    }
+  });
+</script>
+
+
+==================================================
+Contents of: /Users/damionrashford/ChatGuru/_includes/head.html
+==================================================
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/style.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/auth.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+</head>

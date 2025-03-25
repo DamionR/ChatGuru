@@ -58,7 +58,7 @@ title: User Profile - ChatGuru
 <div class="auth-redirect" id="auth-redirect" style="display: none;">
   <h2>Please sign in to view your profile</h2>
   <p>You need to be signed in to access this page.</p>
-  <a href="/signin.html" class="button primary-button">Sign In</a>
+  <a href="{{ '/auth/signin.html' | relative_url }}" class="button primary-button">Sign In</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -78,10 +78,6 @@ title: User Profile - ChatGuru
     const updateProfileButton = document.getElementById('update-profile-button');
     const signoutButton = document.getElementById('signout-button');
     const connectGithubButton = document.getElementById('connect-github-button');
-    
-    const supabaseUrl = 'https://zxkvmgmcjuigfgevwdrc.supabase.co';
-    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4NTI2OTEsImV4cCI6MjA1ODQyODY5MX0.fTxsFd_NN4p2i2giUsY1FvFm8hlhrBJ-7ycso4ux8I8';
-    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
     
     try {
       const user = await getCurrentUser();
@@ -122,14 +118,6 @@ title: User Profile - ChatGuru
       authRedirect.style.display = 'block';
     }
     
-    async function ensureProfilesTable() {
-      try {
-        await supabase.rpc('create_profiles_table_if_not_exists');
-      } catch (error) {
-        console.error('RPC not available, will create profile on update if needed');
-      }
-    }
-    
     updateProfileButton.addEventListener('click', async function() {
       errorMessage.style.display = 'none';
       successMessage.style.display = 'none';
@@ -163,7 +151,7 @@ title: User Profile - ChatGuru
     signoutButton.addEventListener('click', async function() {
       try {
         await signOut();
-        window.location.href = '/';
+        window.location.href = '{{ "/" | relative_url }}';
       } catch (error) {
         console.error('Error signing out:', error);
         errorMessage.textContent = 'Error signing out. Please try again.';

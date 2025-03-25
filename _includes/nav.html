@@ -3,30 +3,27 @@
   <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
     <!-- Brand / Logo -->
     <div class="nav-brand">
-      <a href="{{ '/index.markdown' | relative_url }}" style="font-weight: 600; color: #333; text-decoration: none; font-size: 1.25rem;">ChatGuru</a>
+      <a href="{{ '/' | relative_url }}" style="font-weight: 600; color: #333; text-decoration: none; font-size: 1.25rem;">ChatGuru</a>
     </div>
     <!-- Navigation Links -->
     <div class="nav-links" style="display: flex; align-items: center;">
       <!-- Always Visible -->
-      <a href="{{ '/index.markdown' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Chat Home</a>
+      <a href="{{ '/' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Chat Home</a>
       <!-- Guest Links: Visible when not authenticated -->
       <span class="guest-links" style="display: none;">
-        <a href="{{ '/signin.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign In</a>
-        <a href="{{ '/signup.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign Up</a>
+        <a href="{{ '/auth/signin.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign In</a>
+        <a href="{{ '/auth/signup.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Sign Up</a>
       </span>
       <!-- Authenticated Links: Visible when authenticated -->
       <span class="auth-links" style="display: none;">
-        <a href="{{ '/profile.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Profile</a>
+        <a href="{{ '/auth/profile.html' | relative_url }}" class="nav-link" style="margin: 0 1rem; color: #333; text-decoration: none;">Profile</a>
         <button id="signout-nav-button" class="nav-button" style="margin: 0 1rem; background: none; border: none; color: #333; font-weight: 500; cursor: pointer;">Sign Out</button>
       </span>
     </div>
   </div>
 </nav>
-<script type="module">
-  import { supabase, signOut } from "{{ site.baseurl }}/assets/js/supabase-client.js";
-  
+<script>
   document.addEventListener('DOMContentLoaded', async function() {
-    // Check current session using Supabase auth API
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       document.querySelector('.auth-links').style.display = 'inline';
@@ -36,13 +33,12 @@
       document.querySelector('.auth-links').style.display = 'none';
     }
     
-    // Bind sign out event
     const signoutButton = document.getElementById('signout-nav-button');
     if (signoutButton) {
       signoutButton.addEventListener('click', async function() {
         try {
           await signOut();
-          window.location.href = '/';
+          window.location.href = '{{ "/" | relative_url }}';
         } catch (error) {
           console.error('Error signing out:', error);
           alert('Error signing out. Please try again.');
