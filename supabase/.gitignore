@@ -1,8 +1,21 @@
-# Supabase
+# Supabase/.gitignore
+
+# Supabase build artifacts and temporary directories
 .branches
 .temp
 
-# dotenvx
+# Dotenv files – do not commit any secrets or local environment configurations
 .env.keys
 .env.local
 .env.*.local
+
+# Node modules (if any exist within supabase functions)
+node_modules/
+
+# Log and temporary files
+*.log
+*.tmp
+
+# Local environment and configuration files
+.env
+.env.*
