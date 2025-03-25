@@ -1,5 +1,30 @@
-_site
-.sass-cache
-.jekyll-cache
-.jekyll-metadata
-vendor
+# Jekyll build output and caches
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata/
+
+# Vendor libraries (if any)
+vendor/
+
+# Node modules
+node_modules/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Log files
+*.log
+
+# Temporary files and folders
+*.tmp
+tmp/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
