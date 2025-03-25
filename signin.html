@@ -1,0 +1,188 @@
+---
+layout: default
+title: Sign In - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .auth-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .oauth-options {
+      margin: 20px 0;
+    }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+  </style>
+  <title>Sign In - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Sign In</h1>
+    <div id="signin-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" required />
+      </div>
+      
+      <div class="auth-actions">
+        <button type="button" id="signin-button">Sign In</button>
+        <button type="button" id="magic-link-button">Send Magic Link</button>
+      </div>
+      
+      <div class="auth-links">
+        <a href="/reset-password.html">Forgot your password?</a>
+      </div>
+      
+      <hr />
+      
+      <div class="oauth-options">
+        <button type="button" id="google-signin">Sign in with Google</button>
+      </div>
+      
+      <div class="auth-links">
+        Don't have an account? <a href="/signup.html">Sign Up</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const signinButton = document.getElementById('signin-button');
+      const magicLinkButton = document.getElementById('magic-link-button');
+      const googleSigninButton = document.getElementById('google-signin');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      signinButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) {
+          errorMessage.textContent = 'Please enter both email and password';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          signinButton.disabled = true;
+          signinButton.textContent = 'Signing in...';
+          const { data, error } = await signInWithEmail(email, password);
+          if (error) throw error;
+          window.location.href = "/";
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during sign in';
+          errorMessage.style.display = 'block';
+          signinButton.disabled = false;
+          signinButton.textContent = 'Sign In';
+        }
+      });
+
+      magicLinkButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        if (!email) {
+          errorMessage.textContent = 'Please enter your email address';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          magicLinkButton.disabled = true;
+          magicLinkButton.textContent = 'Sending...';
+          const { error } = await signInWithMagicLink(email);
+          if (error) throw error;
+          successMessage.textContent = 'Magic link sent! Check your email.';
+          successMessage.style.display = 'block';
+          passwordInput.value = '';
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred when sending magic link';
+          errorMessage.style.display = 'block';
+        } finally {
+          magicLinkButton.disabled = false;
+          magicLinkButton.textContent = 'Send Magic Link';
+        }
+      });
+
+      googleSigninButton.addEventListener('click', async function() {
+        try {
+          errorMessage.style.display = 'none';
+          successMessage.style.display = 'none';
+          await signInWithGoogle();
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during Google sign in';
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

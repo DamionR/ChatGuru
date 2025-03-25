@@ -1,0 +1,33 @@
+<div class="auth-nav">
+    <!-- Items shown to authenticated users -->
+    <div class="user-nav-item" style="display: none;">
+      <a href="/profile.html">My Profile</a>
+    </div>
+    <div class="user-nav-item" style="display: none;">
+      <button class="auth-button" data-auth-state="authenticated" id="signout-nav-button">Sign Out</button>
+    </div>
+    
+    <!-- Items shown to unauthenticated users -->
+    <div class="guest-nav-item">
+      <a href="/signin.html">Sign In</a>
+    </div>
+    <div class="guest-nav-item">
+      <a href="/signup.html">Sign Up</a>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const signoutButton = document.getElementById('signout-nav-button');
+      if (signoutButton) {
+        signoutButton.addEventListener('click', async function() {
+          try {
+            await signOut();
+            window.location.href = '/';
+          } catch (error) {
+            console.error('Error signing out:', error);
+          }
+        });
+      }
+    });
+  </script>

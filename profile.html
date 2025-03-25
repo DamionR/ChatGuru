@@ -1,0 +1,181 @@
+---
+layout: default
+title: User Profile - ChatGuru
+---
+
+<div class="profile-container protected-content" style="display: none;">
+  <h1>User Profile</h1>
+  
+  <div class="loading-indicator" id="loading-indicator">Loading profile data...</div>
+  
+  <div id="profile-content" style="display: none;">
+    <div class="error-message" id="error-message"></div>
+    <div class="success-message" id="success-message"></div>
+    
+    <div class="profile-info">
+      <div class="info-item">
+        <strong>Email:</strong>
+        <span id="user-email"></span>
+      </div>
+      <div class="info-item">
+        <strong>User ID:</strong>
+        <span id="user-id"></span>
+      </div>
+    </div>
+    
+    <div class="profile-form">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input id="fullName" type="text" />
+      </div>
+      
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" type="text" />
+      </div>
+      
+      <div class="form-group">
+        <label for="website">Website</label>
+        <input id="website" type="url" />
+      </div>
+      
+      <button type="button" id="update-profile-button">Update Profile</button>
+    </div>
+    
+    <div class="connected-accounts">
+      <h3>Connected Accounts</h3>
+      <ul id="connected-providers"></ul>
+      <button id="connect-github-button" style="display: none;">Connect GitHub Account</button>
+      <p class="note">Note: Please use a GitHub account with the same email as your ChatGuru account.</p>
+    </div>
+    
+    <div class="auth-actions">
+      <button type="button" id="signout-button" class="danger-button">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<div class="auth-redirect" id="auth-redirect" style="display: none;">
+  <h2>Please sign in to view your profile</h2>
+  <p>You need to be signed in to access this page.</p>
+  <a href="/signin.html" class="button primary-button">Sign In</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', async function() {
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const profileContent = document.getElementById('profile-content');
+    const authRedirect = document.getElementById('auth-redirect');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+    const userEmail = document.getElementById('user-email');
+    const userId = document.getElementById('user-id');
+    const fullNameInput = document.getElementById('fullName');
+    const usernameInput = document.getElementById('username');
+    const websiteInput = document.getElementById('website');
+    const updateProfileButton = document.getElementById('update-profile-button');
+    const signoutButton = document.getElementById('signout-button');
+    const connectGithubButton = document.getElementById('connect-github-button');
+    
+    const supabaseUrl = 'https://zxkvmgmcjuigfgevwdrc.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4a3ZtZ21janVpZ2ZnZXZ3ZHJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI4NTI2OTEsImV4cCI6MjA1ODQyODY5MX0.fTxsFd_NN4p2i2giUsY1FvFm8hlhrBJ-7ycso4ux8I8';
+    const supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        loadingIndicator.style.display = 'none';
+        authRedirect.style.display = 'block';
+        return;
+      }
+      userEmail.textContent = user.email;
+      userId.textContent = user.id;
+      
+      try {
+        await ensureProfilesTable();
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('full_name, username, website')
+          .eq('id', user.id)
+          .single();
+        if (profile) {
+          fullNameInput.value = profile.full_name || '';
+          usernameInput.value = profile.username || '';
+          websiteInput.value = profile.website || '';
+        }
+      } catch (e) {
+        console.error('Error fetching profile:', e);
+      }
+      
+      loadingIndicator.style.display = 'none';
+      profileContent.style.display = 'block';
+      
+      const providers = []; // Populate connected providers as needed.
+      if (!providers.includes('github')) {
+        connectGithubButton.style.display = 'block';
+      }
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      loadingIndicator.style.display = 'none';
+      authRedirect.style.display = 'block';
+    }
+    
+    async function ensureProfilesTable() {
+      try {
+        await supabase.rpc('create_profiles_table_if_not_exists');
+      } catch (error) {
+        console.error('RPC not available, will create profile on update if needed');
+      }
+    }
+    
+    updateProfileButton.addEventListener('click', async function() {
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+      try {
+        const user = await getCurrentUser();
+        if (!user) throw new Error('User not logged in');
+        updateProfileButton.disabled = true;
+        updateProfileButton.textContent = 'Updating...';
+        const updates = {
+          id: user.id,
+          full_name: fullNameInput.value,
+          username: usernameInput.value,
+          website: websiteInput.value,
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await supabase
+          .from('profiles')
+          .upsert(updates, { onConflict: 'id' });
+        if (error) throw error;
+        successMessage.textContent = 'Profile updated successfully!';
+        successMessage.style.display = 'block';
+      } catch (error) {
+        errorMessage.textContent = error.message || 'An error occurred when updating profile';
+        errorMessage.style.display = 'block';
+      } finally {
+        updateProfileButton.disabled = false;
+        updateProfileButton.textContent = 'Update Profile';
+      }
+    });
+    
+    signoutButton.addEventListener('click', async function() {
+      try {
+        await signOut();
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Error signing out:', error);
+        errorMessage.textContent = 'Error signing out. Please try again.';
+        errorMessage.style.display = 'block';
+      }
+    });
+    
+    connectGithubButton.addEventListener('click', () => {
+      const CLIENT_ID = 'Iv23liWPNmxhVbj0A2o5';
+      const REDIRECT_URI = 'https://damionr.github.io/ChatGuru/auth/github/callback';
+      const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=repo`;
+      window.location.href = githubAuthUrl;
+    });
+  });
+</script>

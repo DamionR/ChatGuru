@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>GitHub Authentication</title>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f5f5;
+        text-align: center;
+        padding-top: 50px;
+      }
+      .spinner {
+        margin: auto;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3b82f6;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .message {
+        font-size: 1.2em;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="spinner"></div>
+    <p class="message">Processing GitHub authentication...</p>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      if (code) {
+        localStorage.setItem('github_auth_code', code);
+        setTimeout(() => {
+          window.location.href = '/profile.html';
+        }, 1500);
+      } else {
+        document.body.innerHTML = '<p class="message" style="color: red;">Authentication failed. Please try again.</p>';
+      }
+    </script>
+  </body>
+</html>

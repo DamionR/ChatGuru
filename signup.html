@@ -1,0 +1,152 @@
+---
+layout: default
+title: Sign Up - ChatGuru
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .auth-container {
+      max-width: 400px;
+      margin: 40px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background-color: #3b82f6;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .oauth-options {
+      margin: 20px 0;
+    }
+    .auth-links a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    .auth-links a:hover {
+      text-decoration: underline;
+    }
+    .error-message,
+    .success-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 1em;
+    }
+    .error-message { background-color: #ffebee; color: #c62828; }
+    .success-message { background-color: #e8f5e9; color: #2e7d32; }
+  </style>
+  <title>Sign Up - ChatGuru</title>
+</head>
+<body>
+  <div class="auth-container">
+    <h1>Create Account</h1>
+    <div id="signup-form">
+      <div class="error-message" id="error-message"></div>
+      <div class="success-message" id="success-message"></div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" required />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" required />
+      </div>
+      
+      <button type="button" id="signup-button">Sign Up</button>
+      
+      <hr />
+      
+      <div class="oauth-options">
+        <button type="button" id="google-signup">Sign up with Google</button>
+      </div>
+      
+      <div class="auth-links">
+        Already have an account? <a href="/signin.html">Sign In</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ site.baseurl }}/assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const signupButton = document.getElementById('signup-button');
+      const googleSignupButton = document.getElementById('google-signup');
+      const errorMessage = document.getElementById('error-message');
+      const successMessage = document.getElementById('success-message');
+
+      signupButton.addEventListener('click', async function() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        if (!email || !password) {
+          errorMessage.textContent = 'Please enter both email and password';
+          errorMessage.style.display = 'block';
+          return;
+        }
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        try {
+          signupButton.disabled = true;
+          signupButton.textContent = 'Signing up...';
+          const { data, error } = await signUpWithEmail(email, password);
+          if (error) throw error;
+          successMessage.textContent = 'Success! Please check your email for confirmation link.';
+          successMessage.style.display = 'block';
+          emailInput.value = '';
+          passwordInput.value = '';
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during signup';
+          errorMessage.style.display = 'block';
+        } finally {
+          signupButton.disabled = false;
+          signupButton.textContent = 'Sign Up';
+        }
+      });
+
+      googleSignupButton.addEventListener('click', async function() {
+        try {
+          errorMessage.style.display = 'none';
+          successMessage.style.display = 'none';
+          await signInWithGoogle();
+        } catch (error) {
+          errorMessage.textContent = error.message || 'An error occurred during Google signup';
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

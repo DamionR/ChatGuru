@@ -1,0 +1,28 @@
+{
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.7.0",
+    "express": "^5.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "zod": "^3.24.2"
+  },
+  "name": "chatguru",
+  "version": "1.0.0",
+  "description": "ChatGuru ChatGuru is a real-time chat application powered by OpenRouter, hosted on GitHub Pages using Jekyll. It fetches AI models dynamically and offers a clean, user-friendly chat interface.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DamionR/ChatGuru.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DamionR/ChatGuru/issues"
+  },
+  "homepage": "https://github.com/DamionR/ChatGuru#readme"
+}
