@@ -1,13 +1,30 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/style.css">
-  </head>
+  {% include head.html %}
   <body>
-    {{ content }}
+    <!-- Include the unified navigation bar -->
+    {% include nav.html %}
+    
+    <header class="site-header" style="text-align: center; padding: 1rem 0;">
+      <div class="container">
+        <h1>
+          <a href="{{ site.baseurl }}/" style="text-decoration: none; color: #333;">{{ site.title }}</a>
+        </h1>
+      </div>
+    </header>
+    
+    <main class="main-content">
+      <div class="container">
+        {{ content }}
+      </div>
+    </main>
+    
+    <footer class="site-footer" style="text-align: center; padding: 1rem 0; background-color: #f5f5f5;">
+      <div class="container">
+        <p>&copy; {{ site.time | date: '%Y' }} ChatGuru. All rights reserved.</p>
+      </div>
+    </footer>
+    
     <!-- Load Google Maps JavaScript API with geometry library -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYhgqMfTMImNQQjQb6gzHYtW1EODYPpEI&libraries=geometry" async defer></script>
     <!-- Load Chat Module as an ES module -->

@@ -1,9 +1,7 @@
-// /assets/js/chat/conversationHistory.js
-
 import { supabase } from "../../js/supabase-client.js";
 
-// Save the current conversation history (an array of messages) for the logged‑in user.
-// We store conversation as JSON in the "conversations" table, keyed by user_id.
+// Save the current conversation history for the logged‑in user.
+// Conversation data is stored as JSON in the "conversations" table, keyed by user_id.
 export async function saveConversation(userId, conversationHistory) {
   try {
     const { data, error } = await supabase
@@ -17,6 +15,7 @@ export async function saveConversation(userId, conversationHistory) {
     return data;
   } catch (err) {
     console.error("Error saving conversation history:", err);
+    return null;
   }
 }
 
@@ -52,17 +51,16 @@ export function displayConversations(conversationData) {
     container.innerHTML = "<p>No previous conversations found.</p>";
     return;
   }
-  // Create a single conversation item representing the most recent conversation.
+  // Create a conversation item representing the last conversation.
   const convItem = document.createElement("div");
   convItem.className = "conversation-item";
   convItem.textContent = `Last conversation: ${new Date(updated_at).toLocaleString()}`;
   convItem.addEventListener("click", () => {
-    // Replace current chat window with the loaded conversation.
+    // Set the global conversation history and reload chat messages.
     window.conversationHistory = conversation;
     const chatWindow = document.getElementById("chat-window");
     chatWindow.innerHTML = "";
     conversation.forEach((msg) => {
-      // For simplicity, assume msg.content is plain text.
       import("./chatRenderer.js").then((module) => {
         module.addMessage(msg.role, [{ type: "text", text: msg.content }]);
       });
